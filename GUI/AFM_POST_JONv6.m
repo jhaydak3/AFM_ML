@@ -3,7 +3,7 @@
 % It reads the data, extracts force curves, calculates contact points, and estimates
 % elastic modulus using different methods.
 %
-% Authors: J.H. , R. J. W., E. U. A.
+
 
 % Disable warnings temporarily
 warning off;

@@ -7,8 +7,7 @@
 %     (b) We train one "all data" model on bin i => test it on bin j (j != i)
 %         => store cross-bin results in [i,j].
 %
-% Author: ...
-% Date:   ...
+
 
 clear; clc; close all;
 

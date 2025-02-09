@@ -40,8 +40,7 @@ function [mseVal, maeVal, mseValNm, maeValNm, ...
 %   - mod500nmMAE:     MAE of 500 nm modulus [kPa]
 %   - mod500nmMAPE:    MAPE of 500 nm modulus [%]
 %
-% Author: Your Name
-% Date: January 6, 2025
+
 
     %% ----------------- Initialization ----------------- %%
     clc;  % Clear command window

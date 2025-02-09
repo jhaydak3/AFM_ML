@@ -7,8 +7,6 @@ function Fig1_new(useSavedResultsIfAvailable)
     % user-defined categories, computes the fraction of curves in each
     % category, and produces stacked area plots across offsets.
     %
-    % Author: Your Name
-    % Date:   January 6, 2025
 
     % If the user doesn't supply "useSavedResultsIfAvailable", set default:
     if nargin < 1

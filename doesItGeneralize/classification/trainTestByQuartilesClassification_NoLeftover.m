@@ -7,8 +7,7 @@
 %     (b) Train a single "all-data" model on bin i => test it on bin j => cross-domain
 %         => store cross-bin metrics in [i,j].
 %
-% Author: ...
-% Date:   ...
+
 
 clear; clc; close all;
 

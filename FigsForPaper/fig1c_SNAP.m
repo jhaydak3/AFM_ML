@@ -6,10 +6,8 @@
 % in nm. Finally, it reshapes the CP values into a matrix, inverts them, and displays
 % the result.
 %
-% (Replace the dummy get_contact_radius_lookup function with your actual code.)
-%
-% Author: Your Name
-% Date:   2025-02-06
+
+
 
 %% Select the file to process:
 fh = "D:\AFM_PKD\211104-Gusella-PKD\ITG_Dish_03_2021Nov04.mat";

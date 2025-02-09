@@ -7,9 +7,7 @@
 %   Instead, we perform K-fold crossvalidation (k=5 by default) on the entire same dataset.
 %   The final (trainIdx,trainIdx) result is the average across folds.
 %
-%
-% Author: ...
-% Date:   ...
+
 
 clear; clc; close all;
 

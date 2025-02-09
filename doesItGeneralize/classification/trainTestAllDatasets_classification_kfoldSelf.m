@@ -9,8 +9,6 @@
 % This version removes the old "80/20 leftover" logic for smaller datasets;
 % if N < numSamplesToTrain, it trains on ALL curves. No leftover for self-test.
 %
-% Author: ...
-% Date:   ...
 
 clear; clc; close all;
 

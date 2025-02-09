@@ -9,9 +9,8 @@
 % Usage:
 %   learningCurveAllDatasets_classificationHoldout();
 %     -> By default, holdoutSize=1000. Or pass a different holdoutSize.
-%
-% By: <YourName>
-% Date: <Date>
+
+
 
 
 clc; close all; clear;

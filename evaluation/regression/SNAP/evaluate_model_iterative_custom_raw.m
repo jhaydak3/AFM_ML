@@ -22,10 +22,7 @@ function [mseVal, maeVal, mseValNm, maeValNm, ...
 %   - MSE, MAE (nm)
 %   - Hertz & 500 nm modulus (optional) -> MSE, MAE, MAPE
 %
-% Similar to your "evaluate_model_piecewise_custom_regression_v4" script.
-%
-% Author: J. Haydak
-% Date:   2025-02-05
+
 
     %% ----------------- Configuration ----------------- %%
     dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat";

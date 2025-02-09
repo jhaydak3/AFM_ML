@@ -23,9 +23,7 @@ function predict_regression_iterative_custom_raw()
 %   YPred_new (M x 1) - predicted CP in [0,1]
 %   z0_nm     (M x 1) - final CP in nm
 %   E_Pa      (M x 1) - final modulus in Pa
-%
-% Author: J. Haydak & ChatGPT
-% Date:   2025-02-05
+
 % -------------------------------------------------------------------------
 close all
 

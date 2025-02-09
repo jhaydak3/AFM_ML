@@ -8,8 +8,7 @@
 %   2) For each train-size sVal, do R repeated draws of sVal from the leftover portion => train => evaluate on holdout.
 %   3) Collate mean ± std of metrics (MAE, MAPE, etc.) across R runs => learning curve.
 %
-% By: <Your Name>
-% Date: <Date>
+
 
 clc; clear; close all;
 

@@ -18,8 +18,7 @@ function Fig1b_v4_recolored()
     %   - "calc_E_app.m" in your MATLAB path (supports 'pointwise').
     %   - CP_Matrix(row,col) is the *raw* extension value at CP (unshifted).
     %
-    % Author: ...
-    % Date:   ...
+
 
     clear; clc; close all;
 

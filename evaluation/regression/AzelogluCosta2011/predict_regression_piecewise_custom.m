@@ -15,8 +15,7 @@ function predict_regression_piecewise_custom()
 %   - Fits a piecewise model to estimate the contact point.
 %   - Saves and plots the estimated contact points distribution.
 %
-% Author: Your Name
-% Date:   2025-01-02
+
 % -------------------------------------------------------------------------
 
     close all;
