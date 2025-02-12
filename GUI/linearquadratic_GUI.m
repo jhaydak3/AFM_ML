@@ -9,6 +9,15 @@ function predictedCP = linearquadratic_GUI(xData, yData, dataFraction, lb, ub)
     % Normalize deflection
     normDefl = (yData - min(yData)) / (max(yData) - min(yData));
     normExt = (xData - min(xData)) / (max(xData) - min(xData));
+    
+    xi = linspace(0, 1, 2000);
+    interpDefl = interp1(normExt,normDefl,xi);
+
+    
+
+
+    normDefl = interpDefl;
+    normExt = xi;
 
     % Filter data based on deflection threshold
     validIdx = normDefl <= dataFraction;
@@ -51,7 +60,6 @@ function predictedCP = linearquadratic_GUI(xData, yData, dataFraction, lb, ub)
     predictedCP = predictedCP*(max(xData) - min(xData)) + min(xData);
     predictedCP = double(predictedCP);
 end
-
 
 function fvals = piecewiseFun(params, x)
 % piecewiseFun:
