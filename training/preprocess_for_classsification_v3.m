@@ -114,7 +114,6 @@ for p = 1:numFolders
         Defl_Matrix = data.ExtDefl_Matrix;
         Ext_Matrix = data.Ext_Matrix;
         CP_Matrix = data.CP_Matrix;
-        AcceptRejectMap = data.AcceptRejectMap;
         infoIndent = data.indentInfoMap;
 
         % This part is optional.
@@ -130,7 +129,7 @@ for p = 1:numFolders
         for row = 1:size(Defl_Matrix, 1)
             for col = 1:size(Defl_Matrix, 2)
                 % Process all curves, regardless of AcceptRejectMap
-                % Assign label based on AcceptRejectMap
+
                 %isGood = AcceptRejectMap(row, col) == 1; % 1 for Good, 0 for Bad
 
                 checkIfGood = infoIndent(row,col);

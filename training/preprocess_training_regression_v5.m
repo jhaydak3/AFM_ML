@@ -124,7 +124,6 @@ for p = 1:numFolders
         Defl_Matrix = data.ExtDefl_Matrix;
         Ext_Matrix = data.Ext_Matrix;
         CP_Matrix = data.CP_Matrix;
-        AcceptRejectMap = data.AcceptRejectMap;
         infoIndent = data.indentInfoMap;
 
 
@@ -135,7 +134,7 @@ for p = 1:numFolders
 
         for row = 1:size(Defl_Matrix, 1)
             for col = 1:size(Defl_Matrix, 2)
-                if AcceptRejectMap(row, col) == 1 && infoIndent(row,col) ~= "Bad vibes" && infoIndent(row,col) ~= "Ambiguous CP"
+                if infoIndent(row,col) ~= "Bad vibes" && infoIndent(row,col) ~= "Ambiguous CP"
 
                     checkIfGood = infoIndent(row,col);
                     if checkIfGood == "Ambiguous CP" || checkIfGood == "Bad vibes" || checkIfGood == "Probe slip" || checkIfGood == "Too stiff" || checkIfGood == "Precontact skibidi"

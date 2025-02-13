@@ -57,15 +57,17 @@ spring_constant = str2double(sc);  % in N/m (or nN/nM)
 
 E_Matrix = zeros(nRows, nCols);  % Elastic modulus
 CP_Matrix = zeros(nRows, nCols); % Contact points
+HertzianModulus_Matrix = zeros(nRows,nCols); % Hertzian modulus
+AcceptRejectMap = true(nRows,nCols); % This is initialized as true.
+
 
 if SAVE_OPT == 1
     F_Matrix = cell(nRows, nCols);
     D_Matrix = cell(nRows, nCols);
-    RoV_Matrix = cell(nRows, nCols);   % Ratio of variance (if computed)
-    RoVZ_Matrix = cell(nRows, nCols);   % Ratio of variance (Z sensor) (if computed)
     Ext_Matrix = cell(nRows, nCols);     % Extension data for fitting
-    ExtDefl_Matrix = cell(nRows, nCols); % Z sensor of extension data
+    ExtDefl_Matrix = cell(nRows, nCols); % Deflection data
     PWE_Matrix = cell(nRows, nCols);     % Pointwise modulus
+
 end
 
 %% Process Force Curves Using a Single Loop
@@ -81,28 +83,28 @@ for k = 1:totalCurves
     % Compute row (i2) and column (i) indices from k (assuming column-major order)
     i2 = mod(k-1, nRows) + 1;         % Row index (1-based)
     i = floor((k-1) / nRows) + 1;       % Column index (1-based)
-    
+
     % Generate string identifier (using zero-indexing as in the file)
     curID = string([num2str(i2-1) ':' num2str(i-1)]);
-    
+
     % Check if the current force curve exists in FCnames_str
     if ~any(strcmp(FCnames_str, curID))
         continue;  % Skip this (row, col) if no force curve exists
     end
-    
+
     % Read data for the current force curve
     dataPath = ['/ForceMap/0/' num2str(i2-1) ':' num2str(i-1)];
     data = h5read(h5_file_loc, dataPath);
-    
+
     % Extract data columns: raw, deflection (converted to nm), Z sensor (converted to nm)
     raw = data(:, 1);
     defl = data(:, 2) / 1e-9;
     Zsnsr = data(:, 3) / 1e-9;
-    
+
     % Get extension and retraction indices for the current (i2, i)
     extndx = segmentdata(1, i, i2);  % End of extension
     retndx = segmentdata(2, i, i2);  % End of retraction
-    
+
     % Plot raw data if enabled
     if PLOT_OPT == 1
         figure;
@@ -111,17 +113,30 @@ for k = 1:totalCurves
         xlabel('Extension (nm)');
         ylabel('Deflection (nm)');
     end
-    
+
     % Define fitting region (using all points up to extndx)
     start_idx = 1;
     fit_ext = Zsnsr(start_idx:extndx);
     fit_defl = defl(start_idx:extndx);
-    
+
     % Check for non-monotonic extension data
     if any(diff(fit_ext) < 0)
         warning('Non-monotonic extension data at row %d col %d.', i2, i);
     end
-    
+
+    %% Predict whether this is a good quality curve.
+
+    if PREDICT_QUALITY_OPT == 1
+        predictedClassification = predict_NN_GUI_classification(fit_ext, fit_defl, networkModelClassification);
+        % If the first value is above the threshold, it should be rejected.
+        if predictedClassification >= thresholdClassification
+            AcceptRejectMap(i2,i) = false;
+        else
+            AcceptRejectMap(i2,i) = true;
+        end
+
+    end
+
     %% Find the Point of Contact using Piecewise Fit with Normalization & Interpolation
     extMin = min(fit_ext);
     extMax = max(fit_ext);
@@ -147,7 +162,7 @@ for k = 1:totalCurves
             deflFitRange = [0, 15];  % nm
             plotDebug = false;  % Change to true for debugging
             predictedCP = SNAP_GUI(fit_ext, fit_defl, spring_constant, v, th, ...
-                        maxIter, offsetFraction, deflThreshold, deflFitRange, plotDebug, b, R);
+                maxIter, offsetFraction, deflThreshold, deflFitRange, plotDebug, b, R);
         elseif CONTACT_METHOD_OPT == 3
             predictedCP = predict_NN_GUI(fit_ext,fit_defl,networkModel);
         else
@@ -163,7 +178,7 @@ for k = 1:totalCurves
                 figure('Name','Method 1: Piecewise Fit','NumberTitle','off');
                 hold on;
                 plot(fit_ext, fit_defl, 'b-*','DisplayName','Raw Data');
-                
+
                 % Optional: Evaluate the piecewise model on a fine grid (requires pBest)
                 xFine = linspace(0,1,400);
                 yFine = piecewiseFun_v3(pBest, xFine);  % Assumes pBest is available
@@ -179,26 +194,36 @@ for k = 1:totalCurves
             end
         end
     end
-    
+
     % Store contact point (in Z sensor units)
     CP_Matrix(i2, i) = Zsnsr(minxcndx);
-    
+
     %% Calculate Elastic Modulus
     def_val = defl(minxcndx:extndx) - defl(minxcndx);  % Indentation (h - h0)
     D = Zsnsr(minxcndx:extndx) - Zsnsr(minxcndx);        % Z sensor shift (z - z0)
     D = D - def_val;                                    % Correct indentation depth
     F = def_val .* spring_constant;                     % Force vector (using Hooke's law)
-    
+
     % Calculate apparent elastic modulus (pointwise calculation)
     [E_app, regimeChange] = calc_E_app(D, F, R, th, b, 'pointwise', PLOT_OPT);
     % Convert to kPa: first to Pa then to kPa
     E_app = E_app * 1e18 * 1e-9;  % Now in Pa
     E_app = E_app / 1000;         % Now in kPa
     E = E_app .* 2 .* (1 - v^2);  % Correct for Poisson's ratio
-    
+
     % Store elastic modulus (last value of E)
     E_Matrix(i2, i) = E(end);
-    
+
+    % Calculate the fitted Hertzian Modulus
+    try
+        E_app = calc_E_app(D, F, R, th, b, 'Hertz', 0, HERTZIAN_FRONT_REMOVE);
+        E_app = E_app * 1e18 * 1e-9;  % Conversions remain unchanged
+        E_app = E_app / 1000;
+        HertzianModulus_Matrix(i2, i) = E_app;
+    catch
+        HertzianModulus_Matrix(i2, i) = nan;
+    end
+
     %% Save raw data if enabled
     if SAVE_OPT == 1
         F_Matrix{i2, i} = F;
@@ -208,7 +233,7 @@ for k = 1:totalCurves
         PWE_Matrix{i2, i} = real(E);
         % Note: RoV_Matrix and RoVZ_Matrix are not computed in this trimmed version.
     end
-    
+
     % Optionally display progress (every ~10% of total iterations)
     if mod(k, round(totalCurves/10)) == 0
         fprintf('%.2f percent done processing.\n', (k/totalCurves)*100);
@@ -237,7 +262,7 @@ if PLOT_OPT == 1
     figure;
     imagesc(Height_Matrix);
     title('Relative Height (CP estimate)');
-    c = colorbar; 
+    c = colorbar;
     set(gca, 'FontSize', FontSize, 'YDir', 'normal');
 end
 
@@ -250,11 +275,14 @@ if SAVE_OPT == 1
     elseif ~endsWith(SAVE_NAME, '.mat')
         SAVE_NAME = [SAVE_NAME '.mat'];
     end
-    
+
     save(SAVE_NAME, 'E_Matrix', 'F_Matrix', 'D_Matrix', 'CP_Matrix', ...
-         'h5_file_loc', 'R', 'th', 'b', ...
-         'RoV_Matrix', 'RoVZ_Matrix', 'Ext_Matrix', 'ExtDefl_Matrix', 'Height_Matrix', ...
-         'spring_constant', 'v', 'PWE_Matrix');
+        'h5_file_loc', 'R', 'th', 'b', ...
+         'Ext_Matrix', 'ExtDefl_Matrix', 'Height_Matrix', ...
+        'spring_constant', 'v', 'PWE_Matrix', "HertzianModulus_Matrix", ...
+        'AcceptRejectMap','CONTACT_METHOD_OPT','PREDICT_QUALITY_OPT', ...
+        'thresholdClassification','networkModelClassification', ...
+        'networkModel');
 end
 
 %% Re-enable Warnings
