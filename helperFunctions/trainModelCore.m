@@ -3,7 +3,7 @@ function trainedNet = trainModelCore(layers, Xtrain, Ytrain)
 %  - For classification: "crossentropy"
 %  - For regression: "mae" or "mse"
 %
-% We do classification example => no transpose on Ytrain
+% 
 %
 
 nTrain = size(Xtrain,3);
@@ -39,7 +39,6 @@ try
     [trainedNet, info] = trainnet(dlX, Ytrain, net, "mae", opts);
 catch ME
     warning('Error in trainModelCore.\n%s', ME.message);
-    fprintf('Trying with format ''CBT'' (need to do this for ResNet/ConvNet). \n ')
 
 end
 end

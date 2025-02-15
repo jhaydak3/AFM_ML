@@ -11,7 +11,7 @@ modelFiles = {
    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\evaluation\regression\CNNs\Sotres2022_ResNet50-1D_no_augmentation.mat"; 
 "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\evaluation\regression\CNNs\results_same_epochs\two_conv_LSTM_sequence_pooling_relu_no_augmentation.mat"};
 %modelNames = {'Linear-Quadratic','Linear-Power','ConvNet-1D', 'ResNet50-1D', 'ConvLSTM-1D'};
-modelNames = {'SNAP','Linear-Quadratic','ConvNet-1D', 'ResNet50-1D', 'ConvLSTM-1D'};
+modelNames = {'SNAP','Linear-Quadratic','ConvNet-1D', 'ResNet50-1D', 'ConvLSTM'};
 
 % Check if the number of models and files match
 if length(modelFiles) ~= length(modelNames)

@@ -26,14 +26,17 @@
 clear; clc; close all;
 
 %% 0) Data paths in the EXACT order you requested (classification .mat files)
+
+addpath('C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions')
+
 dataPaths = [
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_tubules.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_podocytes.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_HEPG4.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_iPSC_VSMC.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_LM24.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_MCF7.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_MCF10a.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_tubules.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_podocytes.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_HEPG4.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_iPSC_VSMC.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_LM24.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_MCF7.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_MCF10a.mat"
     ];
 
 cellTypeNames = [ ...

@@ -28,7 +28,7 @@ function predict_regression_iterative_custom_raw()
 close all
 
 %% -------------- Configuration -------------- %%
-dataFile  = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat";
+dataFile  = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat";
 outFile   = "predicted_cp_iterative_raw.mat";
 
 % Max number of iterations
@@ -77,7 +77,6 @@ E_Pa      = nan(numCurves,1);  % final modulus in Pa
 
 %% -------------- Main Loop -------------- %%
 parfor i = 1:numCurves
-    i
     ext_i  = rawExt{i}(:);    % nm
     defl_i = rawDefl{i}(:);   % nm
     k_i    = kAll(i);         % N/m

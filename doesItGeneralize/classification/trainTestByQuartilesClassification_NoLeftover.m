@@ -12,8 +12,8 @@
 clear; clc; close all;
 
 %% 1) Load data (for classification, but using modulusHertz for domain partition)
-dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_All.mat";
-addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\helperFunctions");
+dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_All.mat";
+addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions");
 
 S = load(dataFile, 'X','goodOrBad','modulusHertz');
 if ~isfield(S,'X') || ~isfield(S,'goodOrBad') || ~isfield(S,'modulusHertz')

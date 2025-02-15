@@ -12,8 +12,8 @@
 clear; clc; close all;
 
 %% 1) Load data (for regression)
-dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat";
-addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\helperFunctions");
+dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat";
+addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions");
 
 indentationDepthNm = 500;
 

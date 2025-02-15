@@ -14,13 +14,13 @@ clear; clc; close all;
 %% 0) Setup
 k = 5;  % number of folds for self-test crossvalidation
 dataSets = [
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_LM24.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_MCF7.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_MCF10a.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_HEPG4.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_podocytes.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_tubules.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_LM24.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_MCF7.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_MCF10a.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_HEPG4.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_podocytes.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_tubules.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
 ];
 
 dataSetNames = ["LM24","MCF7","MCF10a","HEPG4","Podocytes","Tubules","iPSC VSMC"];
@@ -28,7 +28,7 @@ dataSetNames = ["LM24","MCF7","MCF10a","HEPG4","Podocytes","Tubules","iPSC VSMC"
 
 numDatasets  = numel(dataSets);
 
-addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\helperFunctions");
+addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions");
 
 % Number of samples to train from each dataset for cross-dataset model
 numSamplesToTrain = 10000;
@@ -47,7 +47,7 @@ sequenceLength  = 2000;
 layers = CNN_custom2(nFeatures, sequenceLength, 7);
 
 % Folder to store results
-resultsFolder = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\doesItGeneralize\regression\resultsKfold";
+resultsFolder = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\doesItGeneralize\regression\resultsKfold";
 if ~exist(resultsFolder,'dir')
     mkdir(resultsFolder);
 end
@@ -109,11 +109,16 @@ for trainIdx = 1:numDatasets
         hertzMAPE(trainIdx,testIdx)     = metricsOut.hertzMAPE;
         mod500MAPE(trainIdx,testIdx)    = metricsOut.mod500MAPE;
     end
-end
+ end
 
 save('generalize_Results.mat','maeNormalized','maeNm', 'hertzMAPE','mod500MAPE', "dataSetNames")
 %% 3) Generate Heatmaps
 close all
+
+newIdx = [1 3 4 2 6 7 5];
+maeNm2 = maeNm(newIdx, newIdx);
+hertzMAPE2 = hertzMAPE(newIdx,newIdx);
+dataSetNames2 = dataSetNames(newIdx);
 
 titles = {
     "Mean Absolute Error (Normalized Units)"
@@ -125,14 +130,14 @@ titles = {
 % Create rounded versions of the matrices
 heatmapDataRounded = {
     round(maeNormalized, 0), 
-    round(maeNm, 0), 
-    round(hertzMAPE, 0), 
+    round(maeNm2, 0), 
+    round(hertzMAPE2, 0), 
     round(mod500MAPE, 0)
 };
 
-for i = 1:numel(heatmapDataRounded)
+for i = [2 3]
     figure;
-    h = heatmap(dataSetNames, dataSetNames, heatmapDataRounded{i}, ...
+    h = heatmap(dataSetNames2, dataSetNames2, heatmapDataRounded{i}, ...
         'Colormap', magma, 'ColorbarVisible', 'on');
     %title(titles{i});
     xlabel('Testing Dataset'); 

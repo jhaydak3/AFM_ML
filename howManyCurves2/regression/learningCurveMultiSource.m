@@ -26,14 +26,16 @@
 clear; clc; close all;
 
 %% 0) Set up data paths in the EXACT order you requested:
+
+addpath('C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions')
 dataPaths = [
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_tubules.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_podocytes.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_HEPG4.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_LM24.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_MCF7.mat"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_MCF10a.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_tubules.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_podocytes.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_HEPG4.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_LM24.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_MCF7.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_MCF10a.mat"
     ];
 
 cellTypeNames = [ ...
@@ -45,7 +47,7 @@ numAllDatasets = numel(dataPaths);
 holdoutSize = 100;   % # curves per dataset for the universal holdout
 
 % Example training sizes
-trainSizes = [100:100:1000, 1500, 2000, 2500, 3000];  
+trainSizes = [100:100:1000, 1500, 2000];  
 R = 5;  % # repeated random draws
 
 enableAugment = false;   % set true if you want data augmentation

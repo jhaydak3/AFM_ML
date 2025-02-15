@@ -15,19 +15,19 @@ clear; clc; close all;
 %% 1) Setup
 k = 5;  % number of folds for self-test
 dataSets = [
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_LM24.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_MCF7.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_MCF10a.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_HEPG4.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_podocytes.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_tubules.mat"
-        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_iPSC_VSMC.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_LM24.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_MCF7.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_MCF10a.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_HEPG4.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_podocytes.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_tubules.mat"
+        "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_iPSC_VSMC.mat"
 ];
 
 dataSetNames = ["LM24","MCF7","MCF10a","HEPG4","Podocytes","Tubules","iPSC VSMC"];
 numDatasets  = numel(dataSets);
 
-addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v4_CNI_predict\helperFunctions");
+addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions");
 
 % Number of samples to train from each dataset (for cross-dataset usage).
 numSamplesToTrain = 10000;  % If dataset N < 10000 => train on all curves
@@ -38,7 +38,7 @@ sequenceLength = 2000;
 layers = CNN_custom_pooling_after_lstm_2conv_relu_classification(nFeatures, sequenceLength, 7);
 
 % Where to store results
-resultsFolder = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v4_CNI_predict\doesItGeneralize\v3_classification\classificationResults";
+resultsFolder = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\doesItGeneralize\v3_classification\classificationResults";
 if ~exist(resultsFolder, 'dir')
     mkdir(resultsFolder);
 end
@@ -139,6 +139,13 @@ end
 %% 5) Show Heatmaps
 close all
 
+% Reorder 
+newIdx = [1 3 4 2 6 7 5];
+dataSetNames2 = dataSetNames(newIdx);
+aucMatrix2 = aucMatrix(newIdx, newIdx);
+
+
+
 figure;
 cellLabelColorStr = 'auto';
 
@@ -148,7 +155,7 @@ heatmap(dataSetNames, dataSetNames, accuracyMatrix, ...
 xlabel('Testing Dataset'); ylabel('Training Dataset');
 
 figure;
-heatmap(dataSetNames, dataSetNames, round(aucMatrix,2), ...
+heatmap(dataSetNames2, dataSetNames2, round(aucMatrix2,2), ...
     'Colormap', magma, 'CellLabelColor',cellLabelColorStr);
 xlabel('Testing Dataset'); ylabel('Training Dataset');
 
@@ -226,12 +233,12 @@ function trainedNet = trainClassificationOneDataset_singleModel_noLeftover(layer
 
     opts = trainingOptions('adam',...
         'MaxEpochs',30,...
-        'MiniBatchSize',64,...
+        'MiniBatchSize',32,...
         'Shuffle','every-epoch',...
         'Verbose',true,...
         'Plots','none',...
         'ValidationFrequency',50,...
-        'InitialLearnRate',1e-3);
+        'InitialLearnRate',5e-4);
 
     fprintf('Training single CNN model (no leftover logic)...\n');
     try

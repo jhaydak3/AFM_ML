@@ -17,9 +17,11 @@ clc; close all; clear;
 
 %% 0) Setup
 
+addpath('C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions')
+
 % Example: classification data sets
 dataSets = [
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\classification_processed_files\processed_features_for_classification_All.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\classification_processed_files\processed_features_for_classification_All.mat"
     % Add more file paths as needed, one per dataset
     ];
 dataSetNames = ["All"]; % Provide matching names
@@ -42,6 +44,7 @@ allResults = struct();
 
 holdoutSize = 1000;
 fprintf('Using a fixed holdout of %d samples from each dataset.\n', holdoutSize);
+
 
 rng(1337);
 

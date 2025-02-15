@@ -22,7 +22,7 @@ function [maeVals, mseVals, mapeVals, bestN, ...
     close all;  % Close all figures
 
     %% ----------------- Configuration ----------------- %%
-    dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat";
+    dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat";
     rovPredFile = "predicted_contact_points_rov.mat";
 
     % Output file for saving the evaluation results
@@ -30,7 +30,7 @@ function [maeVals, mseVals, mapeVals, bestN, ...
 
 
     % Add folder with helper functions
-    addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\helperFunctions");
+    addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions");
 
     % Choose whether to save the results
     saveResults = true;

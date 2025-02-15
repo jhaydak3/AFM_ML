@@ -10,7 +10,7 @@ function predict_rov_method()
 
     %% ----------------- Configuration ----------------- %%
     % File containing processed AFM data (extension & deflection)
-    newDataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat";
+    newDataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat";
 
     % Output file for saving the estimated contact points
     predictionOutputFile = 'predicted_contact_points_rov.mat';

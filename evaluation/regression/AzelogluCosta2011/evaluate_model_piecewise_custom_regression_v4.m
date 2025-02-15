@@ -48,11 +48,11 @@ function [mseVal, maeVal, mseValNm, maeValNm, ...
 
     %% ----------------- Configuration ----------------- %%
     % Paths to data and prediction files
-    dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat";
-    piecewisePredFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\evaluation\regression\AzelogluCosta2011\predicted_contact_points_piecewise_fit_deflectionFraction.mat"
+    dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat";
+    piecewisePredFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\evaluation\regression\AzelogluCosta2011\predicted_contact_points_piecewise_fit_deflectionFraction.mat"
 
     % Add folder with helper functions
-    addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\helperFunctions");
+    addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions");
 
 
     % Output file for saving evaluation results

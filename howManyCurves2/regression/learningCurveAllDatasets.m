@@ -15,8 +15,9 @@ clc; clear; close all;
 %% 0) Setup
 
 % Example: regression data sets
+addpath('C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions')
 dataSets = [
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat"
     % Add more file paths as needed, one per dataset
 ];
 dataSetNames = ["All"]; % Provide matching names

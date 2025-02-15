@@ -22,7 +22,7 @@ function predict_regression_piecewise_custom()
 
     %% ----------------- Configuration ----------------- %%
     % File containing processed AFM data (extension & deflection)
-    newDataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat";
+    newDataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat";
 
     % Output file for saving the estimated contact points
     predictionOutputFile = 'predicted_contact_points_piecewise_fit_deflectionFraction.mat';
@@ -65,7 +65,6 @@ function predict_regression_piecewise_custom()
 
     %% ----------------- Fit Each Curve ----------------- %%
     parfor i = 1:numCurves
-        i
         
         normDefl = processedDefl(:,i);
         normExt = processedExt(:,i);

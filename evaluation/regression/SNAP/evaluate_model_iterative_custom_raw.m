@@ -25,7 +25,7 @@ function [mseVal, maeVal, mseValNm, maeValNm, ...
 
 
     %% ----------------- Configuration ----------------- %%
-    dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_All.mat";
+    dataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat";
     iterPredFile = "predicted_cp_iterative_raw.mat";  % from predict_regression_iterative_custom_raw.m
     
     % Where to save the final evaluation metrics
