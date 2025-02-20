@@ -62,14 +62,14 @@ modelsAllData = cell(K,1);  % each cell => net trained on entire bin i
 nFeatures      = size(X,1);
 sequenceLength = size(X,2);
 %layers = CNN_custom_pooling_after_lstm_relu_regression(nFeatures, sequenceLength);
-layers = CNN_custom_pooling_after_lstm_2conv_relu(nFeatures, sequenceLength, 7);
+layers = CNN_custom_pooling_after_bilstm_2conv_relu(nFeatures, sequenceLength, 7);
 
 % 4b) trainingOptions
 opts = trainingOptions('adam', ...
     'MaxEpochs',200, ...
     'MiniBatchSize',64*.5, ...
     'Shuffle','every-epoch', ...
-    'InitialLearnRate',5e-4, ...
+    'InitialLearnRate',1e-4, ...
     'Plots','none', ...
     'Verbose',true);
 
@@ -164,25 +164,41 @@ for iBin = 1:K
 end
 
 %% 7) Visualize
-close all
 
-xStr = {'Q_1','Q_2','Q_3','Q_4'}; 
 
-figure('Name','MAE (nm) Heatmap');
-h = heatmap(xStr, xStr, round(maeNmMatrix,0));
-%title('Contact Point MAE (nm)');
+fontSize = 18;
+fontSizeLegend = 13;
+fontFamily = 'Arial';
+cellLabelColorStr = 'auto';
+
+
+
+xStr = {'Quartile 1','Quartile 2','Quartile 3','Quartile 4'};
+
+figure('Name','MAE CP', ...
+    'Units','inches', 'Position',[1 1 5 5]*1.3);
+set(gca,'FontName',fontFamily,'FontSize',fontSize)
+h = heatmap(xStr, xStr, round(maeNmMatrix,0), ...
+    'Colormap', magma, 'CellLabelColor',cellLabelColorStr,'FontSize', fontSize, ...
+    'FontName',fontFamily);
+h.Position = [0.26 0.36 0.60 0.60];
+set(struct(h).NodeChildren(3), 'YTickLabelRotation', 45);
+set(struct(h).NodeChildren(3), 'XTickLabelRotation', 45);
 xlabel('Test Hertzian Modulus Quartile'); ylabel('Train Hertzian Modulus Quartile');
-colormap(magma);
 h.ColorLimits = [min(round(maeNmMatrix,0), [], 'all'), 150];
 
-figure('Name','Hertzian Modulus MAPE');
-h = heatmap(xStr,xStr,round(hertzMapeMatrix,0));
+figure('Name','HERTZIAN MODULUS MAPE', ...
+    'Units','inches', 'Position',[1 1 5 5]*1.3);
+h = heatmap(xStr,xStr,round(hertzMapeMatrix,0), ...
+    'Colormap', magma, 'CellLabelColor',cellLabelColorStr,'FontSize', fontSize, ...
+    'FontName',fontFamily);
+h.Position = [0.26 0.36 0.60 0.60];
+set(struct(h).NodeChildren(3), 'YTickLabelRotation', 45);
+set(struct(h).NodeChildren(3), 'XTickLabelRotation', 45);
 h.ColorLimits = [min(round(hertzMapeMatrix,0), [], 'all'), 50];
-colormap(magma);
-%title('Hertzian Modulus MAPE (%)');
 xlabel('Test Hertzian Modulus Quartile'); ylabel('Train Hertzian Modulus Quartile');
 %% Save
-save('does_it_generalize_by_modulus_no_augmentation.mat','K','maeNormMatrix','maeNmMatrix','hertzMapeMatrix', ...
+save('bilstm_does_it_generalize_by_modulus_no_augmentation.mat','K','maeNormMatrix','maeNmMatrix','hertzMapeMatrix', ...
     'mod500MapeMatrix')
 
 

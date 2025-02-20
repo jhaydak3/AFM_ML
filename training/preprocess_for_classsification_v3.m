@@ -9,30 +9,28 @@ close all;
 n_points = 2000;               % Number of points for interpolation
 %folderPath = "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training_CNI_and_PKD"; % Path to .mat files
 folderPath = [
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\Tubules"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\All_Cancer_Lines"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Tubules"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Everything_Jan26"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\HEPG4"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\iPSC_VSMC"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\LM24"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\MCF7"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\MCF10a"
-     "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Podocytes"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\HEPG4"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\iPSC_VSMC"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\LM24"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF7"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF10a"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Podocytes"
     ]; % Path to .mat files
 preAllocationSize = 10000;     % Initial preallocation size
 v_initial = 0.5;               % Initial Poisson ratio (will be set from first file)
 hertzFrontRemove = 100;
 
 savedFileName = [
-    % "classification_processed_files\processed_features_for_classification_tubules.mat"
-    % "classification_processed_files\processed_features_for_classification_All_Cancer_Lines.mat"
+    %"classification_processed_files\processed_features_for_classification_tubules.mat"
     %"classification_processed_files\processed_features_for_classification_All.mat"
-    % "classification_processed_files\processed_features_for_classification_HEPG4.mat"
-    % "classification_processed_files\processed_features_for_classification_iPSC_VSMC.mat"
-    % "classification_processed_files\processed_features_for_classification_LM24.mat"
-    % "classification_processed_files\processed_features_for_classification_MCF7.mat"
-    % "classification_processed_files\processed_features_for_classification_MCF10a.mat"
-    "classification_processed_files\processed_features_for_classification_podocytes.mat"
+    "classification_processed_files\processed_features_for_classification_HEPG4.mat"
+    "classification_processed_files\processed_features_for_classification_iPSC_VSMC.mat"
+    "classification_processed_files\processed_features_for_classification_LM24.mat"
+    "classification_processed_files\processed_features_for_classification_MCF7.mat"
+    "classification_processed_files\processed_features_for_classification_MCF10a.mat"
+    %"classification_processed_files\processed_features_for_classification_podocytes.mat"
     ];
 
 

@@ -57,7 +57,7 @@ enableAugment = false;   % set true if you want data augmentation
 % e.g. a CNN with 2 output classes: "reject" (0) vs "accept" (1)
 nFeatures = 6;
 seqLength = 2000;
-layers = CNN_custom_pooling_after_lstm_2conv_relu_classification(nFeatures, seqLength, 2);
+layers = CNN_custom_pooling_after_bilstm_2conv_relu_classification(nFeatures, seqLength, 7);
 
 %% 1) Load all data into a struct array
 allData = struct();
@@ -213,27 +213,58 @@ xlabel(ax1,'Training set size'); ylabel(ax1,'Accuracy');
 xlabel(ax2,'Training set size'); ylabel(ax2,'F1');
 
 %% 6) Plot AUC
-figure('Name','Classification Learning Curves: AUC');
+
+fontSize = 18;
+fontSizeLegend = 13;
+fontFamily = 'Arial';
+cellLabelColorStr = 'auto';
+gridAlpha = 0.3;
+lineWidth = 1.5;
+
+% Create figure with specified size (6" x 4.5") and use inches as units
+figure('Name','Classification Learning Curves: AUC', ...
+    'Units','inches', 'Position',[1 1 5 5]*1.3);
 hold on; grid on;
+
+% Set axes font properties: Arial and font size 16
+set(gca, 'FontName', fontFamily, 'FontSize', fontSize);
+
+% Choose colors and reverse order
 colors = copper(numAllDatasets);
 colors = colors(end:-1:1,:);
-
 
 for i = 1:numAllDatasets
     sVals = allResults(i).trainSizes;
     mAuc  = allResults(i).meanAuc;
     eAuc  = allResults(i).stdAuc;
     lbl = sprintf('%d set%s', i, pluralS(i));
-    errorbar(sVals, mAuc, eAuc, '-o','Color',colors(i,:), 'DisplayName',lbl);
+    % Plot error bars with line width 1.5 and marker style '-o'
+    errorbar(sVals, mAuc, eAuc, '-o', 'Color', colors(i,:), ...
+             'DisplayName', lbl, 'LineWidth', lineWidth);
 end
-xlabel('Training set size'); ylabel('AUC');
-legend('Location','best');
-title(['Learning Curve - AUC (Holdout = 100 per dataset)']);
-xlim([0 2000])
+
+set(gca, 'Position', [0.26 0.36 0.60 0.60]);
+set(gca,'GridAlpha',gridAlpha)
+set(gca,'FontSize',fontSize,'FontName',fontFamily)
+set(gca,'LineWidth',lineWidth)
+
+
+% Set labels with Arial and font size 16
+xlabel('Training set size')
+ylabel('AUC')
+
+% Create legend with font size 13; no title is added
+legend('Location','best','FontSize',13);
+
+set(gca,'GridAlpha',gridAlpha)
+% Set axis limits
+xlim([0 2000]);
+ylim([0.54 0.91]);
+
 
 
 %% 7) Save final results
-save('multiSourceClassificationResults_holdout.mat','allResults','numAllDatasets','cellTypeNames','Xhold','Yhold','testInds');
+save('bilstm_multiSourceClassificationResults_holdout.mat','allResults','numAllDatasets','cellTypeNames','Xhold','Yhold','testInds');
 fprintf('\nAll done! Results (with universal classification holdout) saved in "multiSourceClassificationResults_holdout.mat".\n');
 
 

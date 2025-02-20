@@ -35,10 +35,10 @@ numSamplesToTrain = 10000;  % If dataset N < 10000 => train on all curves
 % CNN architecture
 nFeatures      = 6;
 sequenceLength = 2000;
-layers = CNN_custom_pooling_after_lstm_2conv_relu_classification(nFeatures, sequenceLength, 7);
+layers = CNN_custom_pooling_after_bilstm_2conv_relu_classification(nFeatures, sequenceLength, 7);
 
 % Where to store results
-resultsFolder = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\doesItGeneralize\v3_classification\classificationResults";
+resultsFolder = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\doesItGeneralize\v3_classification\bilstm_classificationResults";
 if ~exist(resultsFolder, 'dir')
     mkdir(resultsFolder);
 end
@@ -137,27 +137,43 @@ for trainIdx = 1:numDatasets
 end
 
 %% 5) Show Heatmaps
-close all
+%close all
+
+fontSize = 18;
+fontSizeLegend = 13;
+fontFamily = 'Arial';
+cellLabelColorStr = 'auto';
+
+
 
 % Reorder 
-newIdx = [1 3 4 2 6 7 5];
+newIdx = [1 3 4 2 6 5 7];
 dataSetNames2 = dataSetNames(newIdx);
 aucMatrix2 = aucMatrix(newIdx, newIdx);
 
 
 
-figure;
-cellLabelColorStr = 'auto';
+%figure;
 
-heatmap(dataSetNames, dataSetNames, accuracyMatrix, ...
-    'Title','Classification Accuracy', ...
-    'Colormap', magma, 'CellLabelColor',cellLabelColorStr);
+% heatmap(dataSetNames, dataSetNames, accuracyMatrix, ...
+%     'Title','Classification Accuracy', ...
+%     'Colormap', magma, 'CellLabelColor',cellLabelColorStr);
+% xlabel('Testing Dataset'); ylabel('Training Dataset');
+
+figure('Name','AUC', ...
+       'Units','inches', 'Position',[1 1 5 5]*1.3);
+set(gca,'FontName',fontFamily,'FontSize',fontSize)
+h = heatmap(dataSetNames2, dataSetNames2, round(aucMatrix2,2), ...
+    'Colormap', magma, 'CellLabelColor',cellLabelColorStr,'FontSize', fontSize, ...
+    'FontName',fontFamily);
+h.Position = [0.26 0.36 0.60 0.60];
+set(struct(h).NodeChildren(3), 'YTickLabelRotation', 45);
+set(struct(h).NodeChildren(3), 'XTickLabelRotation', 45); 
+
+
+
 xlabel('Testing Dataset'); ylabel('Training Dataset');
 
-figure;
-heatmap(dataSetNames2, dataSetNames2, round(aucMatrix2,2), ...
-    'Colormap', magma, 'CellLabelColor',cellLabelColorStr);
-xlabel('Testing Dataset'); ylabel('Training Dataset');
 
 %figure;
 % heatmap(dataSetNames, dataSetNames, recallMatrix, ...
@@ -165,7 +181,7 @@ xlabel('Testing Dataset'); ylabel('Training Dataset');
 %     'Colormap', magma, 'CellLabelColor',cellLabelColorStr);
 % xlabel('Testing Dataset'); ylabel('Training Dataset');
 %% Save
-save('classification_results_does_it_generalize.mat', 'cellLabelColorStr', ...
+save('bilstm_classification_results_does_it_generalize.mat', 'cellLabelColorStr', ...
     'accuracyMatrix','aucMatrix','k','dataSetNames')
 disp('Classification train/test script (k-fold for self) completed successfully!');
 
@@ -233,12 +249,12 @@ function trainedNet = trainClassificationOneDataset_singleModel_noLeftover(layer
 
     opts = trainingOptions('adam',...
         'MaxEpochs',30,...
-        'MiniBatchSize',32,...
+        'MiniBatchSize',64*.5,...
         'Shuffle','every-epoch',...
         'Verbose',true,...
         'Plots','none',...
         'ValidationFrequency',50,...
-        'InitialLearnRate',5e-4);
+        'InitialLearnRate',1e-4);
 
     fprintf('Training single CNN model (no leftover logic)...\n');
     try
@@ -375,7 +391,7 @@ function netFold = trainFoldCNN(layers, Xtrain, Ytrain)
         'Verbose', true,...  % <-- set to true to see iteration logs in each fold
         'Plots','none',...
         'ValidationFrequency',50,...
-        'InitialLearnRate',5e-4);
+        'InitialLearnRate',1e-4);
 
     try
         [netFold,info] = trainnet(dlX, YcatTrain, netDL, "crossentropy", opts);

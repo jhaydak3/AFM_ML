@@ -9,15 +9,14 @@ close all;
 %% Define Parameters
 n_points = 2000;               % Number of points for interpolation
 folderPath = [
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\Tubules"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\All_Cancer_Lines"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Tubules"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Everything_Jan26"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\HEPG4"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\iPSC_VSMC"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\LM24"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\MCF7"
-    % "C:\Users\MrBes\Documents\MATLAB\Jon_AFM_Code\version4\Training\MCF10a"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Podocytes"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\HEPG4"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\iPSC_VSMC"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\LM24"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF7"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF10a"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Podocytes"
     ]; % Path to .mat files
 
 preAllocationSize = 10000;     % Initial preallocation size
@@ -29,15 +28,14 @@ indentationDepth = 500;        % Indentation depth (nm) to calculate the pointwi
 
 % Specify the file name for saving
 savedFileName = [
-    % "regression_processed_files\processed_features_for_regression_tubules.mat"
-    % "regression_processed_files\processed_features_for_regression_All_Cancer_Lines.mat"
+    %"regression_processed_files\processed_features_for_regression_tubules.mat"
     %"regression_processed_files\processed_features_for_regression_All.mat"
-    % "regression_processed_files\processed_features_for_regression_HEPG4.mat"
-    % "regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
-    % "regression_processed_files\processed_features_for_regression_LM24.mat"
-    % "regression_processed_files\processed_features_for_regression_MCF7.mat"
-    % "regression_processed_files\processed_features_for_regression_MCF10a.mat"
-    "regression_processed_files\processed_features_for_regression_podocytes.mat"
+    "regression_processed_files\processed_features_for_regression_HEPG4.mat"
+    "regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
+    "regression_processed_files\processed_features_for_regression_LM24.mat"
+    "regression_processed_files\processed_features_for_regression_MCF7.mat"
+    "regression_processed_files\processed_features_for_regression_MCF10a.mat"
+    %"regression_processed_files\processed_features_for_regression_podocytes.mat"
 
 
 

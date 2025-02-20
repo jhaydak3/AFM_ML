@@ -47,8 +47,8 @@ general_CNN_evaluation_function_v1(layers,preprocessedDataFile, saveName, false,
 
 % Sotres ResNet50 without augmentation (original)
 layers = CNN_Sotres_ResNet50(1, sequenceLength, 3, 3, 1);
-saveName = "Sotres2022_ResNet50-1D_no_augmentation.mat";
-general_CNN_evaluation_function_v1(layers,preprocessedDataFile, saveName, false, false)
+saveName = "Sotres2022_ResNet50-1D_no_augmentation_100_epochs.mat";
+general_CNN_evaluation_function_v1_100epochs(layers,preprocessedDataFile, saveName, false, false)
 %%
 % % Sotres ResNet50 with expanded features
 % layers = CNN_Sotres_ResNet50(nFeatures, sequenceLength, 3, 3, 1);
@@ -82,8 +82,8 @@ general_CNN_evaluation_function_v1(layers,preprocessedDataFile, saveName, false,
 
 % CNN 2 Conv block, LSTM sequence mode, relu, no augmentation
 layers = CNN_custom_pooling_after_lstm_2conv_relu(nFeatures, sequenceLength, 7);
-saveName = "two_conv_LSTM_sequence_pooling_relu_no_augmentation.mat";
-general_CNN_evaluation_function_v1(layers,preprocessedDataFile, saveName, true, false)
+saveName = "two_conv_LSTM_sequence_pooling_relu_no_augmentation_100epochs.mat";
+general_CNN_evaluation_function_v1_100epochs(layers,preprocessedDataFile, saveName, true, false)
 
 % % CNN with 2 stacked bilstms and ReLu before final FC layer
 % layers = CNN_stacked_bilstms_relu(nFeatures, sequenceLength, 7);
@@ -94,4 +94,9 @@ general_CNN_evaluation_function_v1(layers,preprocessedDataFile, saveName, true, 
 % layers = CNN_stacked_bilstms_relu(nFeatures, sequenceLength, 7);
 % saveName = "stacked_biLSTM_ReLu_no_augmentation.mat";
 % general_CNN_evaluation_function_v1(layers,preprocessedDataFile, saveName, true, false)
+
+% CNN 2 Conv block, biLSTM sequence mode, relu, no augmentation
+layers = CNN_custom_pooling_after_bilstm_2conv_relu(1, sequenceLength, 7);
+saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_100epoch_onefeature.mat";
+general_CNN_evaluation_function_v1_100epochs(layers,preprocessedDataFile, saveName, false, false)
 

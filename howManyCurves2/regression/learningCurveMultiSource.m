@@ -47,7 +47,7 @@ numAllDatasets = numel(dataPaths);
 holdoutSize = 100;   % # curves per dataset for the universal holdout
 
 % Example training sizes
-trainSizes = [100:100:1000, 1500, 2000];  
+trainSizes = [100:100:1000, 1500, 2000];
 R = 5;  % # repeated random draws
 
 enableAugment = false;   % set true if you want data augmentation
@@ -57,7 +57,7 @@ indentationDepth_nm = 500;  % typically 500 nm
 % example: "CNN_custom_pooling_after_lstm_2conv_relu"
 nFeatures = 6;
 seqLength = 2000;
-layers = CNN_custom_pooling_after_lstm_2conv_relu(nFeatures, seqLength, 7);
+layers = CNN_custom_pooling_after_bilstm_2conv_relu(nFeatures, seqLength, 7);
 
 %% 1) Load all data into a struct array
 allData = struct();
@@ -163,10 +163,14 @@ for i = 1:numAllDatasets
     % Build a local copy of the first i datasets for repeated draws
     % so that draws don't "use up" data in allData permanently across
     % different trainSizes. We do a "deep copy" of the leftover data.
-    trainPool(i).datasets = copyDatasetStructs(allData(1:i)); 
+    trainPool(i).datasets = copyDatasetStructs(allData(1:i));
+
 
     %% 4a) Loop over training sizes
-    for sIdx = 1:numel(trainSizes)
+    if isempty(gcp('nocreate'))
+        parpool(8);
+    end
+    parfor sIdx = 1:numel(trainSizes)
         sVal = trainSizes(sIdx);
         fprintf('   - TrainSize = %d\n', sVal);
 
@@ -298,22 +302,13 @@ xlabel(ax4,'Training set size'); ylabel(ax4,'MAPE (%)');
 %% Additional Single-Plot Figures
 close all
 
-% Define your start and end colors as [R G B], values between 0 and 1
-% colorStart = [0.0 0.0 0.0];  % e.g. black
-% colorEnd   = [1.0 0.0 0.0];  % e.g. red
-% 
-% colorStart = [ 0.7882    0.7882    0.0549];
-% colorEnd = [  0.8196    0.0902    0.0902];
-% 
-% % Pre-allocate array
-% colors = zeros(numAllDatasets, 3);
-% colors = parula(numAllDatasets);
-% 
-% % Fill in each row of 'colors' by linear interpolation
-% for i = 1:numAllDatasets
-%     fraction = (i-1) / (numAllDatasets - 1);
-%     colors(i,:) = colorStart + fraction * (colorEnd - colorStart);
-% end
+fontSize = 18;
+fontSizeLegend = 13;
+fontFamily = 'Arial';
+cellLabelColorStr = 'auto';
+gridAlpha = 0.3;
+lineWidth = 1.5;
+
 
 colors = copper(numAllDatasets);
 colors = colors(end:-1:1,:);
@@ -323,8 +318,11 @@ colors = colors(end:-1:1,:);
 
 
 % Single plot: Contact Point (MAE in nm) vs. Training Set Size
-figure('Name','Learning Curve - Contact Point (nm)');
+figure('Name','Learning Curve - Contact Point (nm)', ...
+    'Units','inches', 'Position',[1 1 5 5]*1.3);
+
 hold on; grid on;
+
 
 for i = 1:numAllDatasets
     sVals  = allResults(i).trainSizes;
@@ -335,17 +333,25 @@ for i = 1:numAllDatasets
 
     errorbar(sVals, mMaeNm, eMaeNm, '-o', ...
         'Color', colors(i,:), ...
-        'DisplayName', lbl);
+        'DisplayName', lbl,'LineWidth',lineWidth);
 end
 
-xlabel('Training set size'); 
+set(gca, 'Position', [0.26 0.36 0.60 0.60]);
+set(gca,'GridAlpha',gridAlpha)
+set(gca,'FontSize',fontSize,'FontName',fontFamily)
+set(gca,'LineWidth',lineWidth)
+
+xlabel('Training set size');
 ylabel('Contact Point MAE (nm)');
-title('Learning Curve - Contact Point MAE (Holdout = 100 per dataset)');
-legend('Location','best');
+legend('Location','best','FontSize',fontSizeLegend,'NumColumns',2);
 xlim([0 2000])
+set(gca, 'GridAlpha', gridAlpha);
+
 
 % Single plot: Hertz MAPE (%) vs. Training Set Size
-figure('Name','Learning Curve - Hertzian Modulus MAPE (Holdout = 100 per dataset)');
+figure('Name','Learning Curve - Hertzian Modulus MAPE (Holdout = 100 per dataset)', ...
+    'Units','inches', 'Position',[1 1 5 5]*1.3);
+
 hold on; grid on;
 
 for i = 1:numAllDatasets
@@ -357,19 +363,23 @@ for i = 1:numAllDatasets
 
     errorbar(sVals, mHertz, eHertz, '-o', ...
         'Color', colors(i,:), ...
-        'DisplayName', lbl);
+        'DisplayName', lbl, 'LineWidth',lineWidth);
 end
+set(gca, 'Position', [0.26 0.36 0.60 0.60]);
+set(gca,'GridAlpha',gridAlpha)
+set(gca,'FontSize',fontSize,'FontName',fontFamily)
+set(gca,'LineWidth',lineWidth)
 
 xlabel('Training set size');
 ylabel('Hertzian Modulus MAPE (%)');
-title('Learning Curve - Hertzian Modulus MAPE (Holdout = 100 per dataset)');
-legend('Location','best');
+%title('Learning Curve - Hertzian Modulus MAPE (Holdout = 100 per dataset)');
+legend('Location','best','FontSize',fontSizeLegend,'NumColumns',2);
 
 xlim([0 2000])
 
 
 %% 6) Save
-save('multiSourceResults_holdout.mat','allResults','numAllDatasets','cellTypeNames','holdoutStruct','Xhold','Yhold','testInds');
+save('biLSTM_multiSourceResults_holdout.mat','allResults','numAllDatasets','cellTypeNames','holdoutStruct','Xhold','Yhold','testInds');
 fprintf('\nAll done! Results (with universal holdout) saved in "multiSourceResults_holdout.mat".\n');
 
 

@@ -36,7 +36,7 @@ fprintf('Using a fixed holdout of %d samples for each dataset.\n', holdoutSize);
 % CNN architecture (example)
 nFeatures      = 6;
 sequenceLength = 2000;
-layers = CNN_custom_pooling_after_lstm_2conv_relu(nFeatures, sequenceLength, 7);
+layers = CNN_custom_pooling_after_bilstm_2conv_relu(nFeatures, sequenceLength, 7);
 
 % Data augmentation?
 enableAugmentation = false;
@@ -239,8 +239,18 @@ xlabel(ax3,'Training set size'); ylabel(ax3,'MAPE (%)');
 xlabel(ax4,'Training set size'); ylabel(ax4,'MAPE (%)');
 
 %% Additional Plots
+
+fontSize = 18;
+fontSizeLegend = 13;
+fontFamily = 'Arial';
+cellLabelColorStr = 'auto';
+gridAlpha = 0.3;
+lineWidth = 1.5;
+
+
 % 1) Single plot: Contact point (nm) vs Training Set Size
-figure('Name','Learning Curve - Contact Point (nm)');
+figure('Name','Learnt Curve - CP', ...
+    'Units','inches', 'Position',[1 1 5 5]*1.3);
 hold on; grid on;
 colors = lines(numDatasets);
 
@@ -255,16 +265,23 @@ for d = 1:numDatasets
 
     errorbar(sVals, mMaeNm, eMaeNm, '-o', ...
         'Color', 'k', ...
-        'DisplayName', allResults(d).cellName);
+        'DisplayName', allResults(d).cellName, 'LineWidth',lineWidth);
 end
+set(gca, 'Position', [0.26 0.36 0.60 0.60]);
+set(gca,'GridAlpha',gridAlpha)
+set(gca,'FontSize',fontSize,'FontName',fontFamily)
+set(gca,'LineWidth',lineWidth)
 
 xlabel('Training Set Size');
 ylabel('Contact Point MAE (nm)');
-title('Learning Curve - Contact Point MAE (Holdout = 1000)');
-legend('Location','best');
+legend('Location','best','FontSize',fontSizeLegend);
+xticks([0:1000:4000])
+yticks([20:20:160])
+ylim([20 165])
 
 % 2) Single plot: Hertz MAPE (%) vs Training Set Size
-figure('Name','Learning Curve - Hertzian Modulus MAPE (Holdout = 1000)');
+figure('Name','Learning Curve - Hertzian Modulus MAPE (Holdout = 1000)',...
+    'Units','inches', 'Position',[1 1 5 5]*1.3);
 hold on; grid on;
 
 for d = 1:numDatasets
@@ -278,17 +295,22 @@ for d = 1:numDatasets
 
     errorbar(sVals, mHertz, eHertz, '-o', ...
         'Color', 'k', ...
-        'DisplayName', allResults(d).cellName);
+        'DisplayName', allResults(d).cellName,'LineWidth',lineWidth);
 end
+set(gca, 'Position', [0.26 0.36 0.60 0.60]);
+set(gca,'GridAlpha',gridAlpha)
+set(gca,'FontSize',fontSize,'FontName',fontFamily)
+set(gca,'LineWidth',lineWidth)
+
 
 xlabel('Training Set Size');
 ylabel('Hertzian Modulus MAPE (%)');
-title('Learning Curve - Hertzian Modulus MAPE (Holdout = 1000)');
-legend('Location','best');
+%title('Learning Curve - Hertzian Modulus MAPE (Holdout = 1000)');
+legend('Location','best','FontSize',fontSizeLegend);
 
 
 %% 6) Save final results
-saveFile = sprintf('learningCurveResults_regressionHoldout_%d.mat', holdoutSize);
+saveFile = sprintf('biLSTM_learningCurveResults_regressionHoldout_%d.mat', holdoutSize);
 save(saveFile,'allResults','numDatasets','trainSizes','holdoutSize');
 fprintf('\nAll done! Results saved in %s.\n', saveFile);
 
@@ -301,12 +323,3 @@ fprintf('\nAll done! Results saved in %s.\n', saveFile);
 %% ------------------------------------------------------------------------
 %% HELPER: yourMAPEcalculations
 %% ------------------------------------------------------------------------
-function [hertzMAPE, mod500MAPE] = yourMAPEcalculations(pred, Ytest, dataStruct, testInds, indentationDepth_nm)
-% Placeholder. Replace with your actual code that calculates:
-%  - MAPE for Hertz model
-%  - MAPE for 500 nm modulus
-% etc.
-
-hertzMAPE  = rand() * 5;   % dummy example
-mod500MAPE = rand() * 10;  % dummy example
-end

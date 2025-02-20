@@ -35,9 +35,14 @@ sequenceLength = 2000;
 % saveName = "two_CNN_LSTMsequence_GAP_classification.mat";
 % evaluate_model_classification_CNN_custom(layers,preprocessedDataFile, saveName, true)
 
+% % Two CNN, LSTM (sequence), GAP, ReLu
+% layers = CNN_custom_pooling_after_lstm_2conv_relu_classification(nFeatures, sequenceLength, 7);
+% saveName = "two_CNN_LSTMsequence_GAP_ReLu_classification.mat";
+% evaluate_model_classification_CNN_custom(layers,preprocessedDataFile, saveName, true)
+
 % Two CNN, LSTM (sequence), GAP, ReLu
-layers = CNN_custom_pooling_after_lstm_2conv_relu_classification(nFeatures, sequenceLength, 7);
-saveName = "two_CNN_LSTMsequence_GAP_ReLu_classification.mat";
+layers = CNN_custom_pooling_after_bilstm_2conv_relu_classification(nFeatures, sequenceLength, 7);
+saveName = "two_CNN_biLSTMsequence_GAP_ReLu_classification.mat";
 evaluate_model_classification_CNN_custom(layers,preprocessedDataFile, saveName, true)
 
 % % Three CNN, LSTM (sequence), GAP, ReLu

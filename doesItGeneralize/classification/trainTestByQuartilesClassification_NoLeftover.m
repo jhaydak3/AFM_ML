@@ -54,9 +54,8 @@ modelsAllData = cell(K,1);
 %% 5) Define your classification CNN architecture
 nFeatures      = size(X,1);
 sequenceLength = size(X,2);
-layers = CNN_custom_pooling_after_lstm_2conv_relu_classification( ...
-    nFeatures, sequenceLength, 2); 
-% ^ must output 2 classes => ["reject","accept"]
+layers = CNN_custom_pooling_after_bilstm_2conv_relu_classification( ...
+    nFeatures, sequenceLength, 7); 
 
 rng(1337,'twister');  % reproducible
 
@@ -131,22 +130,37 @@ for iBin = 1:K
 end
 
 %% 8) Visualize
-figure('Name','Accuracy');
-heatmap(1:K, 1:K, accuracyMatrix, 'Title','Accuracy (train -> test)');
-xlabel('Test Hertzian Modulus Quartile'); ylabel('Train Hertzian Modulus Quartile');
 
-figure('Name','AUC');
-xStr = {'Q_1','Q_2','Q_3','Q_4'};
-h = heatmap(xStr, xStr, round(aucMatrix,2));
-%title('AUC'
+fontSize = 18;
+fontSizeLegend = 13;
+fontFamily = 'Arial';
+cellLabelColorStr = 'auto';
+
+
+% figure('Name','Accuracy');
+% heatmap(1:K, 1:K, accuracyMatrix, 'Title','Accuracy (train -> test)');
+% xlabel('Test Hertzian Modulus Quartile'); ylabel('Train Hertzian Modulus Quartile');
+
+figure('Name','AUC', ...
+       'Units','inches', 'Position',[1 1 5 5]*1.3);
+set(gca,'FontName',fontFamily,'FontSize',fontSize)
+xStr = {'Quartile 1','Quartile 2','Quartile 3','Quartile 4'};
+h = heatmap(xStr, xStr, round(aucMatrix,2), ...
+ 'Colormap', magma, 'CellLabelColor',cellLabelColorStr,'FontSize', fontSize, ...
+    'FontName',fontFamily);
+h.Position = [0.26 0.36 0.60 0.60];
+set(struct(h).NodeChildren(3), 'YTickLabelRotation', 45);
+set(struct(h).NodeChildren(3), 'XTickLabelRotation', 45); 
+
+
 xlabel('Test Hertzian Modulus Quartile'); ylabel('Train Hertzian Modulus Quartile');
 colormap(magma)
 
-figure('Name','Recall');
-heatmap(1:K,1:K, recallMatrix, 'Title','Recall (train -> test)');
-xlabel('Test Hertzian Modulus Quartile'); ylabel('Train Hertzian Modulus Quartile');
+% figure('Name','Recall');
+% heatmap(1:K,1:K, recallMatrix, 'Title','Recall (train -> test)');
+% xlabel('Test Hertzian Modulus Quartile'); ylabel('Train Hertzian Modulus Quartile');
 
-save('quartileDomainClassification.mat','K','accuracyMatrix','aucMatrix','recallMatrix');
+save('bilstm_quartileDomainClassification.mat','K','accuracyMatrix','aucMatrix','recallMatrix');
 fprintf('\nQuartile-based domain classification script completed.\n');
 
 
@@ -241,7 +255,7 @@ function netTrained = trainAllDataClassification(Xbin, Lbin, layers)
         'MaxEpochs',30, ...
         'MiniBatchSize',64*.5, ...
         'Shuffle','every-epoch', ...
-        'InitialLearnRate',5e-4, ...
+        'InitialLearnRate',1e-4, ...
         'Plots','none', ...
         'Verbose',true);
 

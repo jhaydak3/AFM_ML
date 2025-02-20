@@ -44,7 +44,8 @@ testOnlyOnGood = false;
 nFeatures       = 6;
 sequenceLength  = 2000;
 %layers = CNN_custom_pooling_after_lstm_relu(nFeatures, sequenceLength, 7);
-layers = CNN_custom2(nFeatures, sequenceLength, 7);
+%layers = CNN_custom2(nFeatures, sequenceLength, 7);
+layers = CNN_custom_pooling_after_bilstm_2conv_relu(nFeatures, sequenceLength, 7);
 
 % Folder to store results
 resultsFolder = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\doesItGeneralize\regression\resultsKfold";
@@ -111,11 +112,17 @@ for trainIdx = 1:numDatasets
     end
  end
 
-save('generalize_Results.mat','maeNormalized','maeNm', 'hertzMAPE','mod500MAPE', "dataSetNames")
+save('bilstm_generalize_Results.mat','maeNormalized','maeNm', 'hertzMAPE','mod500MAPE', "dataSetNames")
 %% 3) Generate Heatmaps
 close all
 
-newIdx = [1 3 4 2 6 7 5];
+fontSize = 18;
+fontSizeLegend = 13;
+fontFamily = 'Arial';
+cellLabelColorStr = 'auto';
+
+
+newIdx = [1 3 4 2 6 5 7];
 maeNm2 = maeNm(newIdx, newIdx);
 hertzMAPE2 = hertzMAPE(newIdx,newIdx);
 dataSetNames2 = dataSetNames(newIdx);
@@ -136,14 +143,17 @@ heatmapDataRounded = {
 };
 
 for i = [2 3]
-    figure;
+    figure('Name',titles{i}, ...
+        'Units','inches', 'Position',[1 1 5 5]*1.3);
     h = heatmap(dataSetNames2, dataSetNames2, heatmapDataRounded{i}, ...
-        'Colormap', magma, 'ColorbarVisible', 'on');
-    %title(titles{i});
-    xlabel('Testing Dataset'); 
+        'Colormap', magma, 'CellLabelColor',cellLabelColorStr,'FontSize', fontSize, ...
+        'FontName',fontFamily);
+    h.Position = [0.26 0.36 0.60 0.60];
+    set(struct(h).NodeChildren(3), 'YTickLabelRotation', 45);
+    set(struct(h).NodeChildren(3), 'XTickLabelRotation', 45);
+    xlabel('Testing Dataset');
     ylabel('Training Dataset');
-    colormap(magma);
-    h.CellLabelColor = 'auto'; % Ensures labels are visible
+    
     if i == 2
         h.ColorLimits = [min(heatmapDataRounded{i}, [], 'all'), 500];
     elseif i == 3

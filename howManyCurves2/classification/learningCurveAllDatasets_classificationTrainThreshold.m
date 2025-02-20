@@ -36,7 +36,7 @@ R = 3;
 % Classification CNN architecture
 nFeatures      = 6;
 sequenceLength = 2000;
-layers = CNN_custom_pooling_after_lstm_2conv_relu_classification( ...
+layers = CNN_custom_pooling_after_bilstm_2conv_relu_classification( ...
     nFeatures, sequenceLength, 7);
 
 % We'll store final results in this struct
@@ -202,7 +202,17 @@ legend('Location','best');
 title(sprintf('Learning Curve - F1 (Holdout=%d)',holdoutSize));
 
 %% 7) Plot AUC
-figure('Name','Learning Curve - AUC (Fixed Holdout)');
+
+fontSize = 18;
+fontSizeLegend = 13;
+fontFamily = 'Arial';
+cellLabelColorStr = 'auto';
+gridAlpha = 0.3;
+lineWidth = 1.5;
+
+
+figure('Name','Learning Curve - AUC (Fixed Holdout)', ...
+    'Units','inches', 'Position',[1 1 5 5]*1.3);
 hold on; grid on;
 for d = 1:numDatasets
     if ~isfield(allResults(d),'trainSizes') || isempty(allResults(d).trainSizes)
@@ -214,15 +224,24 @@ for d = 1:numDatasets
     plotName = char(allResults(d).datasetName);
 
     errorbar(sVals, mAuc, sAuc, '-o', 'Color','k', ...
-        'DisplayName', plotName);
+        'DisplayName', plotName,'LineWidth',lineWidth);
 end
+
+set(gca, 'Position', [0.26 0.36 0.60 0.60]);
+set(gca,'GridAlpha',gridAlpha)
+set(gca,'FontSize',fontSize,'FontName',fontFamily)
+set(gca,'LineWidth',lineWidth)
+
 xlabel('Training Set Size');
 ylabel('AUC');
-legend('Location','best');
-title(sprintf('Learning Curve - AUC (Holdout = %d)', holdoutSize));
+legend('Location','best','FontSize',fontSizeLegend);
+xticks([0:1000:5000])
+yticks([.7:.05:.95])
+xlim([0 5000])
+ylim([.74 .95])
 
 %% 8) Save final results
-saveFile = sprintf('learningCurveClassificationHoldout_%d.mat', holdoutSize);
+saveFile = sprintf('bilstm_learningCurveClassificationHoldout_%d.mat', holdoutSize);
 save(saveFile,'allResults','numDatasets','colors','holdoutSize');
 fprintf('\nAll done! Results saved in %s.\n', saveFile);
 
@@ -259,7 +278,7 @@ opts = trainingOptions('adam', ...
     'Verbose',true, ...
     'Plots','none', ...
     'ValidationFrequency',50, ...
-    'InitialLearnRate',5e-4);
+    'InitialLearnRate',1e-4);
 
 try
     [trainedNet, info] = trainnet(dlX, catY', net, "crossentropy", opts);
