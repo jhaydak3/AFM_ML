@@ -11,7 +11,7 @@ By combining these two capabilities, the pipeline facilitates **high-content and
 
 ## Supported Data Formats
 
-Currently, this pipeline is optimized for **Asylum Research Data Format (ARDF)** data converted to **HDF5 (.h5)** files. Other AFM data formats will require some preprocessing to be compatible. Ultimately, all processed data is stored in **MATLAB (.mat)** files for analysis. See an **example .mat file** for required fields.
+Currently, this pipeline is optimized for **Asylum Research Data Format (ARDF)** data converted to **HDF5 (.h5)** files. Other AFM data formats will require some preprocessing to be compatible. Ultimately, all processed data is stored in **MATLAB (.mat)** files for analysis. See an **example .mat file** for required fields. Feel free to reach out to me if you're using another brand of AFM.
 
 ## Repository Contents
 
