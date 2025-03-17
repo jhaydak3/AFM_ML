@@ -16,8 +16,8 @@ addpath(helperFunctionsFolder)
 %% Run the models
 
 % CNN 2 Conv block, LSTM sequence mode, relu, no augmentation
-layers = CNN_custom_pooling_after_lstm_2conv_relu(nFeatures, sequenceLength, 7);
-saveName = "trainedRegressionModels\two_conv_LSTM_sequence_pooling_relu.mat";
+layers = CNN_custom_pooling_after_bilstm_2conv_relu(nFeatures, sequenceLength, 7);
+saveName = "trainedRegressionModels\pooling_after_bilstm_2conv_relu.mat";
 train_CNN_model_regression_function(layers,preprocessedDataFile, saveName, true, false)
 
 
