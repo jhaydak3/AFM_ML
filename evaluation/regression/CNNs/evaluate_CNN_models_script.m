@@ -100,3 +100,47 @@ layers = CNN_custom_pooling_after_bilstm_2conv_relu(1, sequenceLength, 7);
 saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_100epoch_onefeature.mat";
 general_CNN_evaluation_function_v1_100epochs(layers,preprocessedDataFile, saveName, false, false)
 
+%% Now for trimmed stuff
+
+%% General parameters
+sequenceLength = 2000;
+nFeatures = 6;
+preprocessedDataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_EverythingOver40nmNoTrimming.mat"; 
+preprocessedDataFileTrimmed = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_EverythingOver40nmTrimmedTo15nm.mat";
+%preprocessedDataFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v5\training\regression_processed_files\processed_features_for_regression_podocytes.mat";
+% Path to helper functions
+helperFunctionsFolder = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions";
+addpath(helperFunctionsFolder)
+
+layers = CNN_custom_pooling_after_bilstm_2conv_relu(6, sequenceLength, 7);
+saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_EverythingOver40nmTrimmedTo15nm.mat";
+general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile,preprocessedDataFileTrimmed, saveName, true, false)
+
+% 20 nm
+preprocessedDataFileTrimmed = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_EverythingOver40nmTrimmedTo20nm.mat";
+saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_EverythingOver40nmTrimmedTo20nm.mat";
+general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile,preprocessedDataFileTrimmed, saveName, true, false)
+
+% 25 nm
+preprocessedDataFileTrimmed = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_EverythingOver40nmTrimmedTo25nm.mat";
+saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_EverythingOver40nmTrimmedTo25nm.mat";
+general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile,preprocessedDataFileTrimmed, saveName, true, false)
+
+% 30 nm
+preprocessedDataFileTrimmed = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_EverythingOver40nmTrimmedTo30nm.mat";
+saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_EverythingOver40nmTrimmedTo30nm.mat";
+general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile,preprocessedDataFileTrimmed, saveName, true, false)
+
+% 35 nm
+preprocessedDataFileTrimmed = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_EverythingOver40nmTrimmedTo35nm.mat";
+saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_EverythingOver40nmTrimmedTo35nm.mat";
+general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile,preprocessedDataFileTrimmed, saveName, true, false)
+
+% 40 nm
+preprocessedDataFileTrimmed = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_EverythingOver40nmTrimmedTo40nm.mat";
+saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_EverythingOver40nmTrimmedTo40nm.mat";
+general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile,preprocessedDataFileTrimmed, saveName, true, false)
+
+% 40 nm
+saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_EverythingOver40nmNoTrimming.mat";
+general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile ,preprocessedDataFileTrimmed, saveName, true, false)

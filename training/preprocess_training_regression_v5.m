@@ -10,12 +10,13 @@ close all;
 n_points = 2000;               % Number of points for interpolation
 folderPath = [
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Tubules"
+    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Everything_over40nm"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Everything_Jan26"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\HEPG4"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\iPSC_VSMC"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\LM24"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF7"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF10a"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\HEPG4"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\iPSC_VSMC"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\LM24"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF7"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF10a"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Podocytes"
     ]; % Path to .mat files
 
@@ -24,17 +25,21 @@ thresholdFactor = 0.5;         % Factor to determine peak threshold
 hertzFrontRemoveAmount = 100;  % Initial depth (in nm) to ignore when calculating fitted Hertz modulus
 indentationDepth = 500;        % Indentation depth (nm) to calculate the pointwise modulus. Usually use 500 nm.
 
+% TRIMMING (if you want to use only a fraction of the curve)
+% (set to -1 for NO trimming)
+trimAmount = 25; % nm of deflection
+
 
 
 % Specify the file name for saving
 savedFileName = [
     %"regression_processed_files\processed_features_for_regression_tubules.mat"
-    %"regression_processed_files\processed_features_for_regression_All.mat"
-    "regression_processed_files\processed_features_for_regression_HEPG4.mat"
-    "regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
-    "regression_processed_files\processed_features_for_regression_LM24.mat"
-    "regression_processed_files\processed_features_for_regression_MCF7.mat"
-    "regression_processed_files\processed_features_for_regression_MCF10a.mat"
+    "regression_processed_files\processed_features_for_regression_EverythingOver40nmNoTrimmedTo25nm.mat"
+    %"regression_processed_files\processed_features_for_regression_HEPG4.mat"
+    %"regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
+    %"regression_processed_files\processed_features_for_regression_LM24.mat"
+    %"regression_processed_files\processed_features_for_regression_MCF7.mat"
+    %"regression_processed_files\processed_features_for_regression_MCF10a.mat"
     %"regression_processed_files\processed_features_for_regression_podocytes.mat"
 
 
@@ -146,6 +151,19 @@ for p = 1:numFolders
                     deflection = Defl_Matrix{row, col};
                     extension = Ext_Matrix{row, col};
 
+                    % Trimming the deflection curve
+                    if trimAmount ~= -1
+                        [minDefl, minNdx] = min(deflection);
+                        % Find the first index after minDefl where the
+                        % deflection is minDefl + trim
+                        remainingCurve = deflection(minNdx+1:end);
+                        goalDeflection = minDefl + trimAmount;
+                        thisError = abs(remainingCurve - goalDeflection);
+                        [~, minErrorNdx] = min(thisError);
+                        cutoffNdx = minErrorNdx + minNdx;
+                        deflection = deflection(1:cutoffNdx);
+                        extension = extension(1:cutoffNdx);
+                    end
                     % Calculate min and max for scaling
                     minDeflection = min(deflection);
                     maxDeflection = max(deflection);

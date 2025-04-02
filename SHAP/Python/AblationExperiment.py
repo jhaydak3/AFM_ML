@@ -1,15 +1,16 @@
 """
-AblationExperiment.py
+AblationExperiment_nm.py
 
-Violin plot for baseline + ablations (channels 0..5).
-Exports each scenario's error distribution to an Excel file (ablation_results.xlsx).
-
-The script:
-1. Loads model from a folder
-2. Reads test_indices.txt for the test set
-3. Baseline errors vs. ablations
-4. Violin plot (lightblue, black edges), median & IQR
-5. Exports scenario_errs to Excel so you can plot them in Prism
+This script performs ablation experiments for baseline + ablations (channels 0..5)
+using normalized units, then:
+  1. Exports each scenario's error distribution (normalized errors) to an Excel file:
+       ablation_results.xlsx
+  2. Converts each error to nanometers using:
+         error_nm = error_normalized * (maxExtValues - minExtValues)
+     and exports the full (non-averaged) error distribution in nm to:
+         ablation_results_nm.xlsx
+     
+It also produces a violin plot of the normalized errors.
 """
 
 import os
@@ -18,7 +19,6 @@ import numpy as np
 import pandas as pd
 import scipy.io
 import tensorflow as tf
-import matplotlib
 import matplotlib.pyplot as plt
 
 def ablate_channels(X_data, channels_to_ablate):
@@ -43,7 +43,7 @@ def main():
     tf.random.set_seed(SEED)
 
     # =========== 2) Config ===========
-    channels_to_test = [0,1,2,3,4,5]  # ablate all channels
+    channels_to_test = [0,1,2,3,4,5]  # ablate channels 0 to 5
     model_folder = r"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\SHAP\Python\trainedBiConvLSTM_0.80_20250316_1115"
     mat_file_path = r"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\regression_processed_files\processed_features_for_regression_All.mat"
 
@@ -65,10 +65,17 @@ def main():
     X_mat = data['X']
     Y_mat = data['Y']
 
-    X_all = np.transpose(X_mat, (2,1,0))
+    # Reshape X to (N, 2000, 6) and Y to (N,)
+    X_all = np.transpose(X_mat, (2, 1, 0))
     Y_all = Y_mat.flatten()
     N = X_all.shape[0]
     print(f"Loaded dataset with {N} samples.")
+
+    # =========== 4.1) Load Conversion Factors ===========
+    if 'maxExtValues' not in data or 'minExtValues' not in data:
+        raise KeyError("maxExtValues or minExtValues not found in .mat file. Please check your data keys.")
+    maxExtValues = data['maxExtValues'].flatten()  # shape (N,)
+    minExtValues = data['minExtValues'].flatten()  # shape (N,)
 
     # =========== 5) Load test_indices.txt for test set ===========
     test_indices_path = os.path.join(model_folder, "test_indices.txt")
@@ -82,7 +89,7 @@ def main():
         if lines[0].strip().lower().startswith("test indices"):
             start_line = 1
         for line in lines[start_line:]:
-            line=line.strip()
+            line = line.strip()
             if line:
                 idx_list.append(int(line))
 
@@ -96,7 +103,7 @@ def main():
 
     # =========== 6) Baseline Errors ===========
     preds = model.predict(X_test).flatten()
-    baseline_errors = np.abs(preds - Y_test)
+    baseline_errors = np.abs(preds - Y_test)  # normalized absolute errors
 
     scenario_errs = []
     scenario_labels = []
@@ -109,18 +116,16 @@ def main():
     for ch_idx in channels_to_test:
         X_ablate = ablate_channels(X_test, [ch_idx])
         preds_ablate = model.predict(X_ablate).flatten()
-        ablate_errs = np.abs(preds_ablate - Y_test)
+        ablate_errs = np.abs(preds_ablate - Y_test)  # normalized errors
 
-        label = f"Ablate {features[ch_idx]}(Ch{ch_idx+1})"
+        label = f"Ablate {features[ch_idx]} (Ch{ch_idx+1})"
         scenario_errs.append(ablate_errs)
         scenario_labels.append(label)
 
-        print(f"{label}: median={np.median(ablate_errs):.4f}, iqr=({np.percentile(ablate_errs,25):.4f},{np.percentile(ablate_errs,75):.4f})")
+        print(f"{label}: median={np.median(ablate_errs):.4f}, IQR=({np.percentile(ablate_errs,25):.4f},{np.percentile(ablate_errs,75):.4f})")
 
-    # =========== 8) Violin Plot ===========
-
-    fig, ax = plt.subplots(figsize=(9,4))
-    # scenario_errs => list of arrays, each is shape (test_count,)
+    # =========== 8) Violin Plot of Normalized Errors ===========
+    fig, ax = plt.subplots(figsize=(9, 4))
     parts = ax.violinplot(scenario_errs,
                           positions=range(len(scenario_errs)),
                           showmeans=False, showextrema=False, showmedians=False)
@@ -131,35 +136,43 @@ def main():
         pc.set_alpha(0.7)
         pc.set_linewidth(1.5)
 
-    # overlay median & IQR lines
+    # Overlay median & IQR lines
     for i, errs in enumerate(scenario_errs):
         q1 = np.percentile(errs, 25)
         median_val = np.median(errs)
         q3 = np.percentile(errs, 75)
-
         ax.plot([i, i], [q1, q3], color='red', lw=1.5)   # IQR in red
         ax.plot([i-0.2, i+0.2], [median_val, median_val], color='black', lw=2)
 
     ax.set_xticks(range(len(scenario_labels)))
     ax.set_xticklabels(scenario_labels, rotation=45, ha='right')
-    ax.set_title("Ablation Experiment - Violin Plot (Median & IQR)")
-    ax.set_ylabel("Absolute Error")
+    ax.set_title("Ablation Experiment - Violin Plot (Normalized Errors)")
+    ax.set_ylabel("Absolute Error (Normalized Units)")
     plt.tight_layout()
     plt.show()
 
-    # =========== 9) Export scenario_errs to Excel ===========
-    # We'll make each scenario a column in a DataFrame
-    # The length is test_count
-    df_dict = {}
-    for lbl, arr in zip(scenario_labels, scenario_errs):
-        df_dict[lbl] = arr
-
+    # =========== 9) Export Normalized Errors to Excel ===========
+    df_dict = {lbl: arr for lbl, arr in zip(scenario_labels, scenario_errs)}
     df_errs = pd.DataFrame(df_dict)
     excel_outfile = "ablation_results.xlsx"
     df_errs.to_excel(excel_outfile, index=False)
-    print(f"Exported ablation scenario errors to '{excel_outfile}'")
+    print(f"Exported normalized ablation scenario errors to '{excel_outfile}'")
 
-    print("Ablation violin plot complete.")
+    # =========== 10) Convert Errors to nm and Export Full Distribution ===========
+    # For each test sample, conversion is: error_nm = error_normalized * (max - min)
+    scale_factors = maxExtValues[np.array(idx_list)] - minExtValues[np.array(idx_list)]
+    nm_errors_list = []
+    for errs in scenario_errs:
+        nm_errs = errs * scale_factors  # elementwise conversion, preserving test_count entries
+        nm_errors_list.append(nm_errs)
+
+    df_dict_nm = {lbl: nm_arr for lbl, nm_arr in zip(scenario_labels, nm_errors_list)}
+    df_nm = pd.DataFrame(df_dict_nm)
+    excel_outfile_nm = "ablation_results_nm.xlsx"
+    df_nm.to_excel(excel_outfile_nm, index=False)
+    print(f"Exported nm error distributions to '{excel_outfile_nm}'")
+
+    print("Ablation experiment complete.")
 
 if __name__ == "__main__":
     main()

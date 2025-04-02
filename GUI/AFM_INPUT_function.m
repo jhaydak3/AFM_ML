@@ -3,8 +3,8 @@
 % function AFM_INPUT_function on each one.
 
 % Specify the folder path
-%folderPath = 'D:\AFM\240731-SBL-CNI1';
-folderPath = 'D:\AFM\240731-SBL-CNI2';
+folderPath = 'D:\AFM\240731-SBL-CNI1';
+%folderPath = 'D:\AFM\240731-SBL-CNI2';
 % Get a list of all .h5 files in the folder
 h5Files = dir(fullfile(folderPath, '*.h5'));
 
@@ -68,8 +68,8 @@ FontSize = 10; % Font size for plots
 % Generate the save file name for the processed data
 splitStr = split(h5_file_loc, '\');
 fileName = splitStr(end);
-%SAVE_NAME = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\GUI\AFM_analysis\CNI_predicted_with_NN\240731-SBL-CNI1_" + strrep(fileName, 'h5', 'mat');
-SAVE_NAME = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\GUI\AFM_analysis\CNI_predicted_with_NN\240731-SBL-CNI2_" + strrep(fileName, 'h5', 'mat');
+SAVE_NAME = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\GUI\AFM_analysis\CNI_predicted_with_NN\240731-SBL-CNI1_" + strrep(fileName, 'h5', 'mat');
+%SAVE_NAME = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\GUI\AFM_analysis\CNI_predicted_with_NN\240731-SBL-CNI2_" + strrep(fileName, 'h5', 'mat');
 % Notes on the saved results:
 % F_Matrix (cell array): Force of deflection of the cantilever (for Force vs Depth)
 % D_Matrix (cell array): Indentation depth vectors for each indentation
@@ -88,7 +88,7 @@ SAVE_NAME = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\GUI\AFM_an
 % 3: Neural network. Specify the .mat file for the model if choosing this.
 
 CONTACT_METHOD_OPT = 3;
-networkModel = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\trainedRegressionModels\two_conv_LSTM_sequence_pooling_relu.mat";
+networkModel = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\trainedRegressionModels\pooling_after_bilstm_2conv_relu.mat";
 
 %% Parameters for Hertzian modulus
 HERTZIAN_FRONT_REMOVE = 100; % This is the amount of depth that isn't included for Hertzian fitting.
@@ -98,8 +98,8 @@ HERTZIAN_FRONT_REMOVE = 100; % This is the amount of depth that isn't included f
 % bad quality?
 
 PREDICT_QUALITY_OPT = 1;
-networkModelClassification = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\trainedClassificationModels\two_conv_LSTM_sequence_pooling_relu_classification.mat"; 
-thresholdClassification = .25; % Threshold for determining if something should be rejected. Should be determined based on ROC.
+networkModelClassification = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\trainedClassificationModels\pooling_after_bilstm_2conv_relu_classification.mat"; 
+thresholdClassification = .38; % Threshold for determining if something should be rejected. Should be determined based on ROC.
 
 
 %% AFM Tip Parameters - No need to input spring constant; it is read from the experimental data
@@ -107,7 +107,7 @@ thresholdClassification = .25; % Threshold for determining if something should b
 % https://www.nanoandmore.com/AFM-Probe-PNP-TR
 %  normal = not high aspect, ie, not the one for smiti's micropatterns
 % Tip properties based on specific models:
-R = 10;              % Radius of curvature for standard silicon nitride tips (nm)
+R = 40;              % Radius of curvature for standard silicon nitride tips (nm)
 % R = 20;            % Alternate tip radius for specific patterns
 %R = 42;            % Tip radius for older Asylum AFM probes
 %R = 30;              % Rob's MFS experiments

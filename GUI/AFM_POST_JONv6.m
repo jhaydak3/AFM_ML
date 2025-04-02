@@ -55,19 +55,22 @@ spring_constant = str2double(sc);  % in N/m (or nN/nM)
 
 %% Initialize Matrices for Storing Results
 
-E_Matrix = zeros(nRows, nCols);  % Elastic modulus
-CP_Matrix = zeros(nRows, nCols); % Contact points
-HertzianModulus_Matrix = zeros(nRows,nCols); % Hertzian modulus
-AcceptRejectMap = true(nRows,nCols); % This is initialized as true.
+E_Matrix = zeros(nRows, nCols);          % Elastic modulus
+CP_Matrix = zeros(nRows, nCols);           % Contact points
+HertzianModulus_Matrix = zeros(nRows, nCols); % Hertzian modulus
+AcceptRejectMap = true(nRows, nCols);      % Original quality map
 
+% New quality map for the trimmed (clipped) curves
+AcceptRejectMapClipped = false(nRows, nCols);
 
 if SAVE_OPT == 1
     F_Matrix = cell(nRows, nCols);
     D_Matrix = cell(nRows, nCols);
-    Ext_Matrix = cell(nRows, nCols);     % Extension data for fitting
-    ExtDefl_Matrix = cell(nRows, nCols); % Deflection data
-    PWE_Matrix = cell(nRows, nCols);     % Pointwise modulus
-
+    Ext_Matrix = cell(nRows, nCols);      % Extension data for fitting
+    ExtDefl_Matrix = cell(nRows, nCols);    % Deflection data (full curve)
+    PWE_Matrix = cell(nRows, nCols);        % Pointwise modulus
+    % New cell array for clipped deflection curves (the trimmed version)
+    ExtDefl_Matrix_Clipped = cell(nRows, nCols);
 end
 
 %% Process Force Curves Using a Single Loop
@@ -78,34 +81,62 @@ segmentdata = h5read(h5_file_loc, ['/ForceMap/0/' FCnames{end}]);
 totalCurves = nRows * nCols;
 tic;  % Start timer
 
-% Use a single loop over all force curves. For each k, determine row and column indices.
-for k = 1:totalCurves
-    % Compute row (i2) and column (i) indices from k (assuming column-major order)
-    i2 = mod(k-1, nRows) + 1;         % Row index (1-based)
-    i = floor((k-1) / nRows) + 1;       % Column index (1-based)
+% Preallocate temporary output cell arrays (length = totalCurves)
+out_i2               = cell(totalCurves,1);
+out_i                = cell(totalCurves,1);
+out_E                = cell(totalCurves,1);
+out_CP               = cell(totalCurves,1);
+out_Hertzian         = cell(totalCurves,1);
+out_Accept           = cell(totalCurves,1);
+out_AcceptClipped    = cell(totalCurves,1);
+out_F                = cell(totalCurves,1);
+out_D                = cell(totalCurves,1);
+out_Ext              = cell(totalCurves,1);
+out_ExtDefl          = cell(totalCurves,1);
+out_ExtDeflClipped   = cell(totalCurves,1);
+out_PWE              = cell(totalCurves,1);
 
+parfor k = 1:totalCurves
+    % Compute row (i2) and column (i) indices from k (column-major order)
+    local_i2 = mod(k-1, nRows) + 1;  % Row index (1-based)
+    local_i  = floor((k-1) / nRows) + 1;  % Column index (1-based)
+    out_i2{k} = local_i2;
+    out_i{k}  = local_i;
+    
     % Generate string identifier (using zero-indexing as in the file)
-    curID = string([num2str(i2-1) ':' num2str(i-1)]);
-
+    curID = string([num2str(local_i2-1) ':' num2str(local_i-1)]);
+    
     % Check if the current force curve exists in FCnames_str
     if ~any(strcmp(FCnames_str, curID))
-        continue;  % Skip this (row, col) if no force curve exists
+        % If not, assign empty outputs for this iteration
+        out_E{k}              = NaN;
+        out_CP{k}             = NaN;
+        out_Hertzian{k}       = NaN;
+        out_Accept{k}         = false;
+        out_AcceptClipped{k}  = false;
+        out_F{k}              = [];
+        out_D{k}              = [];
+        out_Ext{k}            = [];
+        out_ExtDefl{k}        = [];
+        out_ExtDeflClipped{k} = [];
+        out_PWE{k}            = [];
+        continue;
     end
-
+    
     % Read data for the current force curve
-    dataPath = ['/ForceMap/0/' num2str(i2-1) ':' num2str(i-1)];
+    dataPath = ['/ForceMap/0/' num2str(local_i2-1) ':' num2str(local_i-1)];
     data = h5read(h5_file_loc, dataPath);
-
+    
     % Extract data columns: raw, deflection (converted to nm), Z sensor (converted to nm)
-    raw = data(:, 1);
-    defl = data(:, 2) / 1e-9;
-    Zsnsr = data(:, 3) / 1e-9;
-
-    % Get extension and retraction indices for the current (i2, i)
-    extndx = segmentdata(1, i, i2);  % End of extension
-    retndx = segmentdata(2, i, i2);  % End of retraction
-
-    % Plot raw data if enabled
+    raw    = data(:, 1);
+    defl   = data(:, 2) / 1e-9;
+    Zsnsr  = data(:, 3) / 1e-9;
+    
+    % Get extension and retraction indices for the current (local_i2, local_i)
+    extndx = segmentdata(1, local_i, local_i2);  % End of extension
+    retndx = segmentdata(2, local_i, local_i2);    % End of retraction
+    
+    % (Optional) Plot raw data if enabled – note: plotting in parfor is not recommended
     if PLOT_OPT == 1
         figure;
         plot(Zsnsr(1:extndx), defl(1:extndx));
@@ -113,132 +144,196 @@ for k = 1:totalCurves
         xlabel('Extension (nm)');
         ylabel('Deflection (nm)');
     end
-
-    % Define fitting region (using all points up to extndx)
+    
+    % Define fitting region (all points up to extndx)
     start_idx = 1;
-    fit_ext = Zsnsr(start_idx:extndx);
-    fit_defl = defl(start_idx:extndx);
-
+    fit_ext   = Zsnsr(start_idx:extndx);
+    fit_defl  = defl(start_idx:extndx);
+    
     % Check for non-monotonic extension data
     if any(diff(fit_ext) < 0)
-        warning('Non-monotonic extension data at row %d col %d.', i2, i);
+        warning('Non-monotonic extension data at row %d col %d.', local_i2, local_i);
     end
-
-    %% Predict whether this is a good quality curve.
-
+    
+    % Initialize trimming flag and variables
+    trimmingNeeded = false;
+    % Predict quality on full (untrimmed) curve
     if PREDICT_QUALITY_OPT == 1
-        predictedClassification = predict_NN_GUI_classification(fit_ext, fit_defl, networkModelClassification);
-        % If the first value is above the threshold, it should be rejected.
-        if predictedClassification >= thresholdClassification
-            AcceptRejectMap(i2,i) = false;
+        initialPred = predict_NN_GUI_classification(fit_ext, fit_defl, networkModelClassification);
+        if initialPred < thresholdClassification
+            local_Accept = true;
+            trimmed_ext  = fit_ext;
+            trimmed_defl = fit_defl;
+            local_AcceptClipped = true;
         else
-            AcceptRejectMap(i2,i) = true;
+            local_Accept = false;
+            if ATTEMPT_TO_TRIM_CURVE_TO_FIND_GOOD == 1
+                trimmingNeeded = true;
+            else
+                trimmingNeeded = false;
+                trimmed_ext  = fit_ext;
+                trimmed_defl = fit_defl;
+            end
+            local_AcceptClipped = false;  % until a good candidate is found
         end
-
+    else
+        trimmed_ext  = fit_ext;
+        trimmed_defl = fit_defl;
+        local_Accept = true;
+        local_AcceptClipped = true;
     end
-
+    
     %% Find the Point of Contact using Piecewise Fit with Normalization & Interpolation
     extMin = min(fit_ext);
     extMax = max(fit_ext);
     defMin = min(fit_defl);
     defMax = max(fit_defl);
-
+    
     if (extMax - extMin) < eps || (defMax - defMin) < eps
-        fprintf('Near-constant curve at row %d col %d. Skipping contact fit.\n', i2, i);
+        fprintf('Near-constant curve at row %d col %d. Skipping contact fit.\n', local_i2, local_i);
         minxcndx = start_idx;  % fallback
     else
         if CONTACT_METHOD_OPT == 1
-            % Define hyperparameters for the piecewise fit function
             dataFraction = 0.3;
             lb = [0, -0.5, 2, 0, 0, 0, 1];
             ub = [1, 0.5, 2, 500, 500, 0, 1];
-
-            % Call external function (assumed to be implemented) to get predicted contact
             predictedCP = linearquadratic_GUI(fit_ext, fit_defl, dataFraction, lb, ub);
         elseif CONTACT_METHOD_OPT == 2
             maxIter = 20;
             offsetFraction = 0.3;
             deflThreshold = 2;  % nm
             deflFitRange = [0, 15];  % nm
-            plotDebug = false;  % Change to true for debugging
+            plotDebug = false;
             predictedCP = SNAP_GUI(fit_ext, fit_defl, spring_constant, v, th, ...
                 maxIter, offsetFraction, deflThreshold, deflFitRange, plotDebug, b, R);
         elseif CONTACT_METHOD_OPT == 3
-            predictedCP = predict_NN_GUI(fit_ext,fit_defl,networkModel);
+            predictedCP = predict_NN_GUI(fit_ext, fit_defl, networkModel);
         else
             error('Contact method not implemented')
         end
-
+        
         if isnan(predictedCP)
-            minxcndx = start_idx;  % fallback
+            minxcndx = start_idx;
         else
             [~, minxcndx_fit] = min(abs(fit_ext - predictedCP));
             minxcndx = minxcndx_fit + start_idx - 1;
             if PLOT_OPT == 1
-                figure('Name','Method 1: Piecewise Fit','NumberTitle','off');
+                figure('Name','Piecewise Fit','NumberTitle','off');
                 hold on;
                 plot(fit_ext, fit_defl, 'b-*','DisplayName','Raw Data');
-
-                % Optional: Evaluate the piecewise model on a fine grid (requires pBest)
-                xFine = linspace(0,1,400);
-                yFine = piecewiseFun_v3(pBest, xFine);  % Assumes pBest is available
-                extPlot = xFine*(extMax - extMin) + extMin;
-                deflPlot = yFine*(defMax - defMin) + defMin;
-                plot(extPlot, deflPlot, 'r-','LineWidth',1.5,'DisplayName','Piecewise Fit');
                 plot(fit_ext(minxcndx_fit), fit_defl(minxcndx_fit), 'ko','MarkerSize',8,'DisplayName','Contact Point');
                 xlabel('Z sensor / Extension (nm)');
                 ylabel('Deflection (nm)');
-                title(sprintf('Piecewise Fit (row=%d, col=%d)', i2, i));
+                title(sprintf('Piecewise Fit (row=%d, col=%d)', local_i2, local_i));
                 legend('Location','best');
                 grid on;
+                hold off;
             end
         end
     end
-
-    % Store contact point (in Z sensor units)
-    CP_Matrix(i2, i) = Zsnsr(minxcndx);
-
-    %% Calculate Elastic Modulus
-    def_val = defl(minxcndx:extndx) - defl(minxcndx);  % Indentation (h - h0)
-    D = Zsnsr(minxcndx:extndx) - Zsnsr(minxcndx);        % Z sensor shift (z - z0)
-    D = D - def_val;                                    % Correct indentation depth
-    F = def_val .* spring_constant;                     % Force vector (using Hooke's law)
-
-    % Calculate apparent elastic modulus (pointwise calculation)
-    [E_app, regimeChange] = calc_E_app(D, F, R, th, b, 'pointwise', PLOT_OPT);
-    % Convert to kPa: first to Pa then to kPa
-    E_app = E_app * 1e18 * 1e-9;  % Now in Pa
-    E_app = E_app / 1000;         % Now in kPa
-    E = E_app .* 2 .* (1 - v^2);  % Correct for Poisson's ratio
-
-    % Store elastic modulus (last value of E)
-    E_Matrix(i2, i) = E(end);
-
-    % Calculate the fitted Hertzian Modulus
+    
+    % Save contact point (in Z sensor units) for this iteration
+    local_CP = Zsnsr(minxcndx);
+    
+    %% Iterative Trimming if Needed
+    if trimmingNeeded
+        % Compute full indentation depth after contact point
+        D_full = Zsnsr(minxcndx:extndx) - Zsnsr(minxcndx);
+        max_depth = D_full(end);
+        candidate_depths = MIN_DEPTH_FOR_GOOD_CLASSIFICATION:50:max_depth;
+        best_candidate_index = [];
+        best_candidate_depth = -inf;
+        for depth = candidate_depths
+            idx = find(D_full <= depth, 1, 'last');
+            if isempty(idx)
+                continue;
+            end
+            candidate_index = minxcndx - 1 + idx;
+            candidate_ext = Zsnsr(1:candidate_index);
+            candidate_defl = defl(1:candidate_index);
+            candidatePred = predict_NN_GUI_classification(candidate_ext, candidate_defl, networkModelClassification);
+            if candidatePred < thresholdClassification
+                best_candidate_depth = depth;
+                best_candidate_index = candidate_index;
+            end
+        end
+        if ~isempty(best_candidate_index)
+            trimmed_ext = Zsnsr(1:best_candidate_index);
+            trimmed_defl = defl(1:best_candidate_index);
+            local_AcceptClipped = true;
+        else
+            trimmed_ext = fit_ext;
+            trimmed_defl = fit_defl;
+            local_AcceptClipped = false;
+        end
+    end
+    
+    %% Calculate Elastic Modulus using the (possibly trimmed) curve
+    new_extndx = length(trimmed_ext);
+    def_val = trimmed_defl(minxcndx:new_extndx) - trimmed_defl(minxcndx);
+    D_new = trimmed_ext(minxcndx:new_extndx) - trimmed_ext(minxcndx);
+    D_new = D_new - def_val;
+    F_new = def_val .* spring_constant;
+    
+    [E_app, regimeChange] = calc_E_app(D_new, F_new, R, th, b, 'pointwise', PLOT_OPT);
+    E_app = E_app * 1e18 * 1e-9;
+    E_app = E_app / 1000;
+    E_local = E_app(end);
+    
+    % Calculate fitted Hertzian Modulus using the trimmed curve
     try
-        E_app = calc_E_app(D, F, R, th, b, 'Hertz', 0, HERTZIAN_FRONT_REMOVE);
-        E_app = E_app * 1e18 * 1e-9;  % Conversions remain unchanged
-        E_app = E_app / 1000;
-        HertzianModulus_Matrix(i2, i) = E_app;
+        E_app_Hertz = calc_E_app(D_new, F_new, R, th, b, 'Hertz', 0, HERTZIAN_FRONT_REMOVE);
+        E_app_Hertz = E_app_Hertz * 1e18 * 1e-9;
+        E_app_Hertz = E_app_Hertz / 1000;
+        Hertzian_local = E_app_Hertz;
     catch
-        HertzianModulus_Matrix(i2, i) = nan;
+        Hertzian_local = NaN;
     end
-
-    %% Save raw data if enabled
-    if SAVE_OPT == 1
-        F_Matrix{i2, i} = F;
-        D_Matrix{i2, i} = D;
-        Ext_Matrix{i2, i} = Zsnsr(1:extndx);
-        ExtDefl_Matrix{i2, i} = defl(1:extndx);
-        PWE_Matrix{i2, i} = real(E);
-        % Note: RoV_Matrix and RoVZ_Matrix are not computed in this trimmed version.
-    end
-
-    % Optionally display progress (every ~10% of total iterations)
-    if mod(k, round(totalCurves/10)) == 0
-        fprintf('%.2f percent done processing.\n', (k/totalCurves)*100);
-    end
+    
+    % Save outputs from this iteration into temporary arrays
+    out_E{k}              = E_local;
+    out_CP{k}             = local_CP;
+    out_Hertzian{k}       = Hertzian_local;
+    out_Accept{k}         = local_Accept;
+    out_AcceptClipped{k}  = local_AcceptClipped;
+    out_F{k}              = F_new;
+    out_D{k}              = D_new;
+    out_Ext{k}            = trimmed_ext;
+    out_ExtDefl{k}        = trimmed_defl;
+    out_ExtDeflClipped{k} = trimmed_defl;
+    out_PWE{k}            = real(E_app);
 end
+
+% After the parfor loop, reassemble the outputs into matrices and cell arrays.
+E_Matrix               = zeros(nRows, nCols);
+CP_Matrix              = zeros(nRows, nCols);
+HertzianModulus_Matrix = zeros(nRows, nCols);
+AcceptRejectMap        = false(nRows, nCols);
+AcceptRejectMapClipped = false(nRows, nCols);
+
+F_Matrix               = cell(nRows, nCols);
+D_Matrix               = cell(nRows, nCols);
+Ext_Matrix             = cell(nRows, nCols);
+ExtDefl_Matrix         = cell(nRows, nCols);
+ExtDefl_Matrix_Clipped = cell(nRows, nCols);
+PWE_Matrix             = cell(nRows, nCols);
+
+for k = 1:totalCurves
+    i2 = out_i2{k};
+    i  = out_i{k};
+    E_Matrix(i2, i)               = out_E{k};
+    CP_Matrix(i2, i)              = out_CP{k};
+    HertzianModulus_Matrix(i2, i) = out_Hertzian{k};
+    AcceptRejectMap(i2, i)        = out_Accept{k};
+    AcceptRejectMapClipped(i2, i) = out_AcceptClipped{k};
+    F_Matrix{i2, i}               = out_F{k};
+    D_Matrix{i2, i}               = out_D{k};
+    Ext_Matrix{i2, i}             = out_Ext{k};
+    ExtDefl_Matrix{i2, i}         = out_ExtDefl{k};
+    ExtDefl_Matrix_Clipped{i2, i} = out_ExtDeflClipped{k};
+    PWE_Matrix{i2, i}             = out_PWE{k};
+end
+
 toc;
 
 %% Plotting Results
@@ -278,9 +373,9 @@ if SAVE_OPT == 1
 
     save(SAVE_NAME, 'E_Matrix', 'F_Matrix', 'D_Matrix', 'CP_Matrix', ...
         'h5_file_loc', 'R', 'th', 'b', ...
-         'Ext_Matrix', 'ExtDefl_Matrix', 'Height_Matrix', ...
+        'Ext_Matrix', 'ExtDefl_Matrix', 'ExtDefl_Matrix_Clipped', 'Height_Matrix', ...
         'spring_constant', 'v', 'PWE_Matrix', "HertzianModulus_Matrix", ...
-        'AcceptRejectMap','CONTACT_METHOD_OPT','PREDICT_QUALITY_OPT', ...
+        'AcceptRejectMap', 'AcceptRejectMapClipped', 'CONTACT_METHOD_OPT','PREDICT_QUALITY_OPT', ...
         'thresholdClassification','networkModelClassification', ...
         'networkModel');
 end

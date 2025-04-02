@@ -82,3 +82,4 @@ end
 %% Save preprocessing times
 save(saveFileName, 'preprocessingTimes');
 fprintf('All preprocessing times saved to "%s".\n', saveFileName);
+max(preprocessingTimes)

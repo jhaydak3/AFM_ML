@@ -17,7 +17,7 @@ addpath(helperFunctionsFolder)
 
 % CNN 2 Conv block, LSTM sequence mode, GAP, dense
 layers = CNN_custom_pooling_after_lstm_2conv_relu_classification(nFeatures, sequenceLength, 7);
-saveName = "trainedClassificationModels\two_conv_LSTM_sequence_pooling_relu_classification.mat";
+saveName = "trainedClassificationModels\pooling_after_bilstm_2conv_relu_classification.mat";
 train_CNN_model_classification_function(layers,preprocessedDataFile, saveName, true)
 
 
