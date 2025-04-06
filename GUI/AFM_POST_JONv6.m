@@ -43,15 +43,35 @@ nCols = max(cndx) + 1;
 
 %% Read Spring Constant from Metadata
 
+% metadata = info.Attributes.Value;
+% metadata = strsplit(metadata, '\n');
+% metadata = string(metadata);
+% %TF = contains(metadata, 'SpringConstant: 0.');
+% TF = startsWith(metadata, 'SpringConstant: ');
+% metadata = metadata(TF);
+% string_w_sc = char(metadata(1));
+% pndx = strfind(string_w_sc, '.');
+% sc = string_w_sc(pndx-1:end);
+% spring_constant = str2double(sc);  % in N/m (or nN/nM)
+
 metadata = info.Attributes.Value;
 metadata = strsplit(metadata, '\n');
 metadata = string(metadata);
-TF = contains(metadata, 'SpringConstant: 0.');
-metadata = metadata(TF);
-string_w_sc = char(metadata(1));
-pndx = strfind(string_w_sc, '.');
-sc = string_w_sc(pndx-1:end);
-spring_constant = str2double(sc);  % in N/m (or nN/nM)
+TF = startsWith(metadata, 'SpringConstant: ');
+springConstantLine = metadata(TF);
+
+if ~isempty(springConstantLine)
+    % Use a regex to capture the number following 'SpringConstant: '
+    token = regexp(springConstantLine(1), 'SpringConstant:\s*([0-9]*\.?[0-9]+)', 'tokens', 'once');
+    if ~isempty(token)
+        spring_constant = str2double(token{1});
+    else
+        error('Could not parse the spring constant from the metadata.');
+    end
+else
+    error('SpringConstant entry not found in metadata.');
+end
+
 
 %% Initialize Matrices for Storing Results
 
@@ -275,14 +295,14 @@ parfor k = 1:totalCurves
     D_new = D_new - def_val;
     F_new = def_val .* spring_constant;
     
-    [E_app, regimeChange] = calc_E_app(D_new, F_new, R, th, b, 'pointwise', PLOT_OPT);
+    [E_app, regimeChange] = calc_E_app(D_new, F_new, R, th, b, 'pointwise', PLOT_OPT, HERTZIAN_FRONT_REMOVE, TIP_IS_SPHERICAL);
     E_app = E_app * 1e18 * 1e-9;
     E_app = E_app / 1000;
     E_local = E_app(end);
     
     % Calculate fitted Hertzian Modulus using the trimmed curve
     try
-        E_app_Hertz = calc_E_app(D_new, F_new, R, th, b, 'Hertz', 0, HERTZIAN_FRONT_REMOVE);
+        E_app_Hertz = calc_E_app(D_new, F_new, R, th, b, 'Hertz', 0, HERTZIAN_FRONT_REMOVE, TIP_IS_SPHERICAL );
         E_app_Hertz = E_app_Hertz * 1e18 * 1e-9;
         E_app_Hertz = E_app_Hertz / 1000;
         Hertzian_local = E_app_Hertz;
@@ -377,7 +397,7 @@ if SAVE_OPT == 1
         'spring_constant', 'v', 'PWE_Matrix', "HertzianModulus_Matrix", ...
         'AcceptRejectMap', 'AcceptRejectMapClipped', 'CONTACT_METHOD_OPT','PREDICT_QUALITY_OPT', ...
         'thresholdClassification','networkModelClassification', ...
-        'networkModel');
+        'networkModel', 'TIP_IS_SPHERICAL');
 end
 
 %% Re-enable Warnings

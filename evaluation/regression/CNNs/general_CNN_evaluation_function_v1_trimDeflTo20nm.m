@@ -26,7 +26,7 @@ function [meanMSE, meanMAE, meanTrainMSE, meanTrainMAE] = general_CNN_evaluation
 
 clc;
 close all;
-fprintf('Starting k-fold cross-validation using Custom CNN Regression Model with Trimmed Test Data (20nm)...\\n');
+fprintf('Starting k-fold cross-validation using Custom CNN Regression Model with Trimmed Test Data (20nm)...\n');
 
 %% ==================== Configuration Parameters ==================== %%
 k = 5; 
@@ -40,10 +40,10 @@ indentationDepth_nm = 500; % nm
 testOnlyOnGood = false;
 
 %% ==================== Load Original and Trimmed Data ==================== %%
-fprintf('Loading original preprocessed data from \"%s\"...\\n', preprocessedDataFile);
+fprintf('Loading original preprocessed data from \"%s\"...\n', preprocessedDataFile);
 data = load(preprocessedDataFile);
 
-fprintf('Loading trimmed preprocessed data from \"%s\"...\\n', preprocessedDataFileTrimmed);
+fprintf('Loading trimmed preprocessed data from \"%s\"...\n', preprocessedDataFileTrimmed);
 dataTrimmed = load(preprocessedDataFileTrimmed);
 
 % Validate loaded data (assuming same fields for both)
@@ -66,7 +66,7 @@ minExtValues = data.minExtValues';
 goodOrBad = data.goodOrBad;
 numSamples = size(X, 3);
 
-fprintf('Loaded original data with %d samples.\\n', numSamples);
+fprintf('Loaded original data with %d samples.\n', numSamples);
 
 %% Trimmed (Test) Data Extraction
 X_trimmed = dataTrimmed.X;
@@ -126,10 +126,10 @@ indicesBad = crossvalind('Kfold',numBadCurves,k);
 indices(goodOrBad == 0) = indicesBad;
 
 %% ==================== Perform k-Fold Cross-Validation ==================== %%
-fprintf('Starting k-fold cross-validation with %d folds...\\n', k);
+fprintf('Starting k-fold cross-validation with %d folds...\n', k);
 
 for fold = 1:k
-    fprintf('Processing Fold %d of %d...\\n', fold, k);
+    fprintf('Processing Fold %d of %d...\n', fold, k);
 
     % Split data into training and testing based on current fold
     testIdx = (indices == fold);
@@ -163,7 +163,7 @@ for fold = 1:k
     end
 
     %% ==================== Define the Regression Neural Network ==================== %%
-    fprintf('Fold %d: Defining the CNN architecture...\\n', fold);
+    fprintf('Fold %d: Defining the CNN architecture...\n', fold);
     % 'layers' is passed in; we assume it is a valid layerGraph or layer array
     % with filter1 and filter2 as needed. 
     % For example usage: layers = CNN_custom(size(XTrainAug,1), size(XTrainAug,2), filter1, filter2);
@@ -291,13 +291,13 @@ if fileID == -1
     error('Cannot open file %s for writing.', badPredictionsFile);
 else
     fprintf(fileID, 'Curves with Absolute Prediction Error > %.2f kPa\\n', errorThreshold_kPa);
-    fprintf(fileID, 'Fold\\tCurveIdx\\tHertzianError(kPa)\\t500nmError(kPa)\\tFile\\tRow\\tCol\\n');
+    fprintf(fileID, 'Fold\\tCurveIdx\\tHertzianError(kPa)\\t500nmError(kPa)\\tFile\\tRow\\tCol\n');
 end
 
 fprintf('Calculating modulus metrics and logging bad predictions...\\n');
 
 for fold = 1:k
-    fprintf('Fold %d: Calculating modulus metrics...\\n', fold);
+    fprintf('Fold %d: Calculating modulus metrics...\n', fold);
 
     % Retrieve predictions and indices
     YTrain = results(fold).YTrain;
@@ -397,7 +397,7 @@ fclose(fileID);
 fprintf('Bad predictions saved to \"%s\".\\n', badPredictionsFile);
 
 %% ==================== Calculate Mean Performance Metrics Across All Folds ==================== %%
-fprintf('Calculating mean performance metrics across all folds...\\n');
+fprintf('Calculating mean performance metrics across all folds...\n');
 validFolds = ~isnan(mseScores) & ~isnan(maeScores) & ~isnan(mseScoresNm) & ~isnan(maeScoresNm);
 
 meanMSE = mean(mseScores(validFolds));
@@ -412,18 +412,18 @@ meanTrainMAENm = mean(trainMaeScoresNm(validFolds));
 
 fprintf('\\n=== Overall Performance Metrics Across All Folds ===\\n');
 % Contact Points (Normalized)
-fprintf('\\n--- Contact Points (Normalized) ---\\n');
+fprintf('\\n--- Contact Points (Normalized) ---\n');
 fprintf('Mean Squared Error (MSE): %.6f\\n', meanMSE);
 fprintf('Mean Absolute Error (MAE): %.6f\\n', meanMAE);
-fprintf('Train Data - Mean Squared Error (MSE): %.6f\\n', meanTrainMSE);
-fprintf('Train Data - Mean Absolute Error (MAE): %.6f\\n', meanTrainMAE);
+fprintf('Train Data - Mean Squared Error (MSE): %.6f\n', meanTrainMSE);
+fprintf('Train Data - Mean Absolute Error (MAE): %.6f\n', meanTrainMAE);
 
 % Contact Points (nm)
 fprintf('\\n--- Contact Points (nm) ---\\n');
 fprintf('Mean Squared Error (MSE): %.6f nm^2\\n', meanMSENm);
 fprintf('Mean Absolute Error (MAE): %.6f nm\\n', meanMAENm);
-fprintf('Train Data - Mean Squared Error (MSE): %.6f nm^2\\n', meanTrainMSENm);
-fprintf('Train Data - Mean Absolute Error (MAE): %.6f nm\\n', meanTrainMAENm);
+fprintf('Train Data - Mean Squared Error (MSE): %.6f nm^2\n', meanTrainMSENm);
+fprintf('Train Data - Mean Absolute Error (MAE): %.6f nm\n', meanTrainMAENm);
 
 %% ==================== Compute & Report Modulus Metrics ==================== %%
 fprintf('\\n--- Failed Modulus Curves ---\\n');
@@ -432,33 +432,33 @@ meanBadHertzCountPred   = mean(arrayfun(@(x) mean((x.badHertzCountPred), 'omitna
 meanBad500CountActual   = mean(arrayfun(@(x) mean((x.bad500CountActual), 'omitnan'), results));
 meanBad500CountPred     = mean(arrayfun(@(x) mean((x.bad500CountPred), 'omitnan'), results));
 
-fprintf('Mean Number of Failed Hertz Modulus Calculations (Actual, test): %.2f\\n',meanBadHertzCountActual)
-fprintf('Mean Number of Failed Hertz Modulus Calculations (Predicted, test): %.2f\\n',meanBadHertzCountPred)
-fprintf('Mean Number of Failed 500 nm Modulus Calculations (Actual, test): %.2f\\n',meanBad500CountActual)
-fprintf('Mean Number of Failed 500 nm Modulus Calculations (Predicted, test): %.2f\\n',meanBad500CountPred)
+fprintf('Mean Number of Failed Hertz Modulus Calculations (Actual, test): %.2f\n',meanBadHertzCountActual)
+fprintf('Mean Number of Failed Hertz Modulus Calculations (Predicted, test): %.2f\n',meanBadHertzCountPred)
+fprintf('Mean Number of Failed 500 nm Modulus Calculations (Actual, test): %.2f\n',meanBad500CountActual)
+fprintf('Mean Number of Failed 500 nm Modulus Calculations (Predicted, test): %.2f\n',meanBad500CountPred)
 
 fprintf('\\n--- Hertzian Modulus (kPa) ---\\n');
 hertzMSE = mean(arrayfun(@(x) mean((x.HertzianModulusPredicted_test - x.HertzianModulusActual_test).^2, 'omitnan'), results));
 hertzMAE = mean(arrayfun(@(x) mean(abs(x.HertzianModulusPredicted_test - x.HertzianModulusActual_test), 'omitnan'), results));
 hertzMAPE = mean(arrayfun(@(x) mean(abs((x.HertzianModulusPredicted_test - x.HertzianModulusActual_test) ./ x.HertzianModulusActual_test)*100, 'omitnan'), results));
-fprintf('Mean Squared Error (MSE): %.6f kPa^2\\n', hertzMSE);
-fprintf('Mean Absolute Error (MAE): %.6f kPa\\n', hertzMAE);
-fprintf('Mean Absolute Percent Error (MAPE): %.2f%%\\n', hertzMAPE);
+fprintf('Mean Squared Error (MSE): %.6f kPa^2\n', hertzMSE);
+fprintf('Mean Absolute Error (MAE): %.6f kPa\n', hertzMAE);
+fprintf('Mean Absolute Percent Error (MAPE): %.2f%%\n', hertzMAPE);
 
-fprintf('\\n--- Modulus at 500 nm (kPa) ---\\n');
+fprintf('\\n--- Modulus at 500 nm (kPa) ---\n');
 mod500nmMSE = mean(arrayfun(@(x) mean((x.Modulus500nmPredicted_test - x.Modulus500nmActual_test).^2, 'omitnan'), results));
 mod500nmMAE = mean(arrayfun(@(x) mean(abs(x.Modulus500nmPredicted_test - x.Modulus500nmActual_test), 'omitnan'), results));
 mod500nmMAPE = mean(arrayfun(@(x) mean(abs((x.Modulus500nmPredicted_test - x.Modulus500nmActual_test) ./ x.Modulus500nmActual_test)*100, 'omitnan'), results));
-fprintf('Mean Squared Error (MSE): %.6f kPa^2\\n', mod500nmMSE);
-fprintf('Mean Absolute Error (MAE): %.6f kPa\\n', mod500nmMAE);
-fprintf('Mean Absolute Percent Error (MAPE): %.2f%%\\n', mod500nmMAPE);
+fprintf('Mean Squared Error (MSE): %.6f kPa^2\n', mod500nmMSE);
+fprintf('Mean Absolute Error (MAE): %.6f kPa\n', mod500nmMAE);
+fprintf('Mean Absolute Percent Error (MAPE): %.2f%%\n', mod500nmMAPE);
 
-fprintf('\\n=== Evaluation Completed Successfully ===\\n');
-fprintf('All figures are saved in the \"Evaluation_Figures\" directory.\\n');
-fprintf('Bad predictions with errors exceeding %.2f kPa are logged in \"%s\".\\n', errorThreshold_kPa, badPredictionsFile);
+fprintf('\\n=== Evaluation Completed Successfully ===\n');
+fprintf('All figures are saved in the \"Evaluation_Figures\" directory.\n');
+fprintf('Bad predictions with errors exceeding %.2f kPa are logged in \"%s\".\n', errorThreshold_kPa, badPredictionsFile);
 
 %% ==================== Save the Collected Results to a .mat File ==================== %%
-fprintf('Saving cross-validation results to \"%s\"...\\n', saveName);
+fprintf('Saving cross-validation results to \"%s\"...\n', saveName);
 save(saveName, ...
      'results', ...
      'mseScores', 'maeScores', ...
@@ -475,11 +475,11 @@ save(saveName, ...
      'meanTrainMSENm', 'meanTrainMAENm',...
      'meanBad500CountPred','meanBad500CountActual',...
      'meanBadHertzCountPred','meanBadHertzCountActual');
-fprintf('Cross-validation results saved successfully.\\n');
+fprintf('Cross-validation results saved successfully.\n');
 
 %% ==================== Plot Predicted vs Actual Values for All Folds ==================== %%
-fprintf('Plotting predicted vs actual values for all folds...\\n');
+fprintf('Plotting predicted vs actual values for all folds...\n');
 plotPredictions_CNN(results, k);
-fprintf('Plotting completed.\\n');
+fprintf('Plotting completed.\n');
 
 end

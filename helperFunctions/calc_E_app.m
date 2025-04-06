@@ -1,4 +1,4 @@
-function [E_app, regimeChange, varargout] = calc_E_app(D, F, R, th, b, mode, plotOpt, HertzFrontRemoveAmount)
+function [E_app, regimeChange, varargout] = calc_E_app(D, F, R, th, b, mode, plotOpt, HertzFrontRemoveAmount, isTipSpherical)
 % Calculates E_app using blunted cone model.
 % Inputs:
 %   D - Depth vector Nx1 in nm
@@ -9,6 +9,7 @@ function [E_app, regimeChange, varargout] = calc_E_app(D, F, R, th, b, mode, plo
 %   mode - 'pointwise' or 'Hertz' for pointwise or single value of E returned
 %   plotOpt - 1 or 0 to plot or not plot the linear plot for Hertz analysis
 %   HertzFrontRemoveAmount - Amount of depth (in nm) to exclude from the front of the data in 'Hertz' mode
+%   isTipSpherical - If true (1), will calculate assuming spherical tip. Otherwise, assumes blunt pyramidal.    
 %
 % Outputs:
 %   E_app - Vector of depthwise E_app values if mode is 'pointwise' or single value if mode is 'Hertz'
@@ -24,7 +25,7 @@ if strcmp(mode, 'pointwise')
         % the contact radius surpasses the cylindrical radius
         % and a blunt-cone geometry once this point is reached:
         Dj = D(j);
-        if Dj <= b^2 / R % Spherical
+        if Dj <= b^2 / R  || isTipSpherical % Spherical 
             E_app(j) = F(j) / (8 / 3 * sqrt(Dj^3 * R));
         else % Blunted cone
             % Solve a nonlinear 1-D equation for contact area
@@ -38,7 +39,6 @@ if strcmp(mode, 'pointwise')
             tm4 = tm4 * sqrt(a^2 - b^2);
             E_app(j) = F(j) / (4 * (tm1 - tm2 - tm3 + tm4));
 
-            a_guess = a;
             if regimeChange == 0
                 regimeChange = j;
             end
@@ -79,8 +79,15 @@ elseif strcmp(mode, 'Hertz')
     % We also track the index 'regimeChange' which is the first index
     % where the code transitions from spherical to blunted cone.
 
+
+
     % 1) Create mask for spherical vs. blunted cone
-    sphericalMask = (D <= b^2 / R);
+    if isTipSpherical 
+        sphericalMask = true(size(D));
+    else
+        sphericalMask = (D <= b^2 / R);
+    end
+    
     bluntedMask   = ~sphericalMask;
 
     % 2) Allocate x_fit
@@ -122,7 +129,7 @@ elseif strcmp(mode, 'Hertz')
     validIdx = D >= HertzFrontRemoveAmount;
 
     % Check if there are enough data points after exclusion
-    if sum(validIdx) < 2
+    if sum(validIdx) < 1
         error('Not enough data points after excluding the initial indentation range. Increase the number of data points or reduce HertzFrontRemoveAmount.');
     end
 

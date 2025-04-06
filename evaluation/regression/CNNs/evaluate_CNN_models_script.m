@@ -143,4 +143,4 @@ general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile,pr
 
 % 40 nm
 saveName = "two_conv_biLSTM_sequence_pooling_relu_no_augmentation_EverythingOver40nmNoTrimming.mat";
-general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile ,preprocessedDataFileTrimmed, saveName, true, false)
+general_CNN_evaluation_function_v1_trimDeflTo20nm(layers,preprocessedDataFile ,preprocessedDataFile, saveName, true, false)

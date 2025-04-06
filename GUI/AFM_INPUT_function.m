@@ -1,9 +1,10 @@
 % run_all_h5.m
 % This script searches the specified folder for all .h5 files and runs the
 % function AFM_INPUT_function on each one.
-
+addpath('C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\GUI')
 % Specify the folder path
-folderPath = 'D:\AFM\240731-SBL-CNI1';
+%folderPath = 'D:\testAFM';
+folderPath = 'D:\Rob_Tissue_AFM\210617';
 %folderPath = 'D:\AFM\240731-SBL-CNI2';
 % Get a list of all .h5 files in the folder
 h5Files = dir(fullfile(folderPath, '*.h5'));
@@ -12,7 +13,7 @@ h5Files = dir(fullfile(folderPath, '*.h5'));
 errorLog = cell(length(h5Files), 1);
 
 % Process files in parallel using parfor
-parfor k = 1:length(h5Files)
+for k = 1:length(h5Files)
     % Build the full file path
     filePath = fullfile(h5Files(k).folder, h5Files(k).name);
     fprintf('Processing file: %s\n', filePath);
@@ -68,7 +69,8 @@ FontSize = 10; % Font size for plots
 % Generate the save file name for the processed data
 splitStr = split(h5_file_loc, '\');
 fileName = splitStr(end);
-SAVE_NAME = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\GUI\AFM_analysis\CNI_predicted_with_NN\240731-SBL-CNI1_" + strrep(fileName, 'h5', 'mat');
+%SAVE_NAME = "D:\testAFM\" + strrep(fileName, 'h5', 'mat');
+SAVE_NAME = "D:\Rob_Tissue_AFM\test\" + strrep(fileName, 'h5', 'mat');
 %SAVE_NAME = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\GUI\AFM_analysis\CNI_predicted_with_NN\240731-SBL-CNI2_" + strrep(fileName, 'h5', 'mat');
 % Notes on the saved results:
 % F_Matrix (cell array): Force of deflection of the cantilever (for Force vs Depth)
@@ -101,21 +103,38 @@ PREDICT_QUALITY_OPT = 1;
 networkModelClassification = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\trainedClassificationModels\pooling_after_bilstm_2conv_relu_classification.mat"; 
 thresholdClassification = .38; % Threshold for determining if something should be rejected. Should be determined based on ROC.
 
+% If the curve is classified as bad, do you want to attempt to trim it so
+% that you get a good curve?
+ATTEMPT_TO_TRIM_CURVE_TO_FIND_GOOD = 0;
+% If yes, what is the minimum amount of depth to consider?
+MIN_DEPTH_FOR_GOOD_CLASSIFICATION = 500; %nm
+
+
 
 %% AFM Tip Parameters - No need to input spring constant; it is read from the experimental data
 % https://www.nanoandmore.com/AFM-Probe-hq-xsc11-hard-al-bs - pattern
 % https://www.nanoandmore.com/AFM-Probe-PNP-TR
 %  normal = not high aspect, ie, not the one for smiti's micropatterns
-% Tip properties based on specific models:
-R = 40;              % Radius of curvature for standard silicon nitride tips (nm)
+% Tip propertie           s based on specific models:
+
+R = 4500;              % Rob's tissue spherical indentation. 4.5 uM, or 4500 nM
+% R = 40;              % Radius of curvature for standard silicon nitride tips (nm)
 % R = 20;            % Alternate tip radius for specific patterns
-%R = 42;            % Tip radius for older Asylum AFM probes
+% R = 42;            % Tip radius for older Asylum AFM probes
 %R = 30;              % Rob's MFS experiments
 th = 35 * pi / 180;  % Cone semi-angle for normal silicon nitride probe (radians) (old and new)
 % th = 20 * pi / 180; % Alternate semi-angle for specific patterns
 %th = 39 * pi / 180; % Rob's MFS
 b = R * cos(th);     % Cylindrical radius for modulus calculation
 v = 0.5;             % Poisson's ratio for the material
+
+
+% #################### IMPORTANT %%%%%%%%%%%%%%%%%%%%%%%% !
+% The code will automatically assume that the tip is pyramidal, UNLESS you
+% specify this parameter below as true (1)
+% In this case, the only probe parameter used is R
+TIP_IS_SPHERICAL = 1;
+
 
 
 

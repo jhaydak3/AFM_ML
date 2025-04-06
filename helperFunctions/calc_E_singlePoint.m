@@ -1,7 +1,7 @@
-function E_val = calc_E_singlePoint(depth_nm, force_N, R, th, b)
+function E_val = calc_E_singlePoint(depth_nm, force_N, R, th, b, isTipSpherical)
     % Returns a single elasticity modulus for one (depth, force).
     % Spherical vs. blunted cone check:
-    if depth_nm <= b^2 / R
+    if depth_nm <= b^2 / R || isTipSpherical
         % Spherical formula
         E_val = force_N / ((8/3) * sqrt(depth_nm^3 * R));
     else

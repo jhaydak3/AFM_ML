@@ -10,7 +10,7 @@ close all;
 n_points = 2000;               % Number of points for interpolation
 folderPath = [
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Tubules"
-    "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Everything_over40nm"
+    %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Everything_over40nm"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Everything_Jan26"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\HEPG4"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\iPSC_VSMC"
@@ -18,32 +18,31 @@ folderPath = [
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF7"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\MCF10a"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Podocytes"
+    "D:\Rob_Tissue_AFM\testAnnotated"
     ]; % Path to .mat files
 
 preAllocationSize = 10000;     % Initial preallocation size
-thresholdFactor = 0.5;         % Factor to determine peak threshold
 hertzFrontRemoveAmount = 100;  % Initial depth (in nm) to ignore when calculating fitted Hertz modulus
 indentationDepth = 500;        % Indentation depth (nm) to calculate the pointwise modulus. Usually use 500 nm.
 
 % TRIMMING (if you want to use only a fraction of the curve)
 % (set to -1 for NO trimming)
-trimAmount = 25; % nm of deflection
+trimAmount = -1; % nm of deflection
 
 
 
 % Specify the file name for saving
 savedFileName = [
     %"regression_processed_files\processed_features_for_regression_tubules.mat"
-    "regression_processed_files\processed_features_for_regression_EverythingOver40nmNoTrimmedTo25nm.mat"
+    %"test.mat"
+    %"regression_processed_files\processed_features_for_regression_EverythingOver40nmTrimmedTo25nm.mat"
     %"regression_processed_files\processed_features_for_regression_HEPG4.mat"
     %"regression_processed_files\processed_features_for_regression_iPSC_VSMC.mat"
     %"regression_processed_files\processed_features_for_regression_LM24.mat"
     %"regression_processed_files\processed_features_for_regression_MCF7.mat"
     %"regression_processed_files\processed_features_for_regression_MCF10a.mat"
     %"regression_processed_files\processed_features_for_regression_podocytes.mat"
-
-
-
+    "regression_processed_files\processed_features_for_regression_spherical_tissue.mat"
     ];
 
 addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions")
@@ -51,7 +50,12 @@ addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunction
 %% Start the loop iterating over folders.
 numFolders = length(folderPath);
 for p = 1:numFolders
-    % Allocate variables.
+    %Load All .mat Files
+    matFiles = dir(fullfile(folderPath(p), '*.mat'));
+    numFiles = length(matFiles);
+    
+    
+    %% Allocate variables.
     processedDefl_cell = cell(1, preAllocationSize);     % To store deflection interpolated data per file
     processedExt_cell = cell(1, preAllocationSize);      % To store extension interpolated data per file
     rawDefl_cell = cell(1, preAllocationSize);           % To store raw deflection data per file
@@ -78,9 +82,9 @@ for p = 1:numFolders
     b_cell = cell(1, preAllocationSize);                  % To store b per curve
     spring_constant_cell = cell(1, preAllocationSize);    % To store spring_constant per curve
 
-    %% Load All .mat Files
-    matFiles = dir(fullfile(folderPath(p), '*.mat'));
-    numFiles = length(matFiles);
+    % Error logging over each file
+    errorLog = cell(numFiles,1);
+
 
     %% Initialize Parallel Pool (Optional)
     % Uncomment the following lines if you want to explicitly start a parallel pool
@@ -119,6 +123,18 @@ for p = 1:numFolders
         temp_b = [];
         temp_spring_constant = [];
 
+        % This is for backwards compatibility. Originally, the pipeline was
+        % made explicitly for probe tips of blunted pyramidal type. When
+        % functionality for spherical probes got added in, IS_TIP_SPHERICAL
+        % got added in too. For newer versions of data, the variable
+        % exists. If it doesn't exist, it was made at the time of the
+        % blunted pyramidal tip only, and so it is definitely not
+        % spherical. We set it to false here, if it doesn't exist in the
+        % mat file, we're good, if it is spherical, the variable will get
+        % overwritten. 
+
+        IS_TIP_SPHERICAL = 0; % false
+
         % Load the .mat file
         filePath = fullfile(folderPath(p), matFiles(i).name);
         data = load(filePath);
@@ -133,10 +149,13 @@ for p = 1:numFolders
         % Initialize counters for skipped points
         skipCount = 0;
         totalProcessed = 0;
-
+        
+        % logfiles for this iteration in the parfor loop
+        skipLogThisFile = {};
 
         for row = 1:size(Defl_Matrix, 1)
             for col = 1:size(Defl_Matrix, 2)
+                isGood = 0; % Assume bad, if it's good it'll get overwritten.
                 if infoIndent(row,col) ~= "Bad vibes" && infoIndent(row,col) ~= "Ambiguous CP"
 
                     checkIfGood = infoIndent(row,col);
@@ -216,7 +235,7 @@ for p = 1:numFolders
                             thisE = nan;
 
                         else
-                            [thisE, ~] = calc_E_app(depth, force, current_R, current_th, current_b, 'Hertz', 0, hertzFrontRemoveAmount);
+                            [thisE, ~] = calc_E_app(depth, force, current_R, current_th, current_b, 'Hertz', 0, hertzFrontRemoveAmount, IS_TIP_SPHERICAL);
                             % Convert modulus to kPa (Hertz model in Pa)
                             thisE = thisE * 1e18 * 1e-9 / 1000;  % Convert from N/m^2 to kPa
                             thisE = thisE .* 2 .* (1 - current_v.^2);    % Convert from E_apparent to E
@@ -228,7 +247,7 @@ for p = 1:numFolders
                             [~, closestIdx] = min(abs(depth-indentationDepth));
                             F500 = force(closestIdx);
                             D500 = depth(closestIdx);
-                            thisE500 = calc_E_singlePoint(D500, F500, current_R, current_th, current_b);
+                            thisE500 = calc_E_singlePoint(D500, F500, current_R, current_th, current_b, IS_TIP_SPHERICAL);
                             thisE500 = thisE500 * 1e18 * 1e-9 / 1000;  % Convert from N/m^2 to kPa
                             thisE500 = thisE500 .* 2 .* (1 - current_v.^2);    % Convert from E_apparent to E
                         end
@@ -267,11 +286,22 @@ for p = 1:numFolders
                         fprintf('Skipping (File: %s, Row: %d, Col: %d) due to error: %s\n', ...
                             matFiles(i).name, row, col, ME.message);
                         skipCount = skipCount + 1;
-                        continue; % Skip to the next iteration of the loop
+                        % ----- Store the error details -----
+                        skipLogThisFile{end+1} = struct( ...
+                            'FileName',    matFiles(i).name, ...
+                            'Row',         row, ...
+                            'Col',         col, ...
+                            'ErrorMessage', ME.message ...
+                            );
+                        continue; % Skip to the next iteration
                     end
+
                 end
             end
         end
+        
+        % Collect the log files.
+        errorLog{i} = skipLogThisFile;
 
         % After the loops, display a summary
         % fprintf('File "%s" processing completed.\nTotal contact points processed: %d\nTotal contact points skipped: %d\n', ...
@@ -305,7 +335,21 @@ for p = 1:numFolders
         spring_constant_cell{i} = temp_spring_constant;
     end
 
+    %% Concatenate and write the errors
 
+    allErrors = [errorLog{:}];  % Flatten the cell array
+    if ~isempty(allErrors)
+        fid = fopen('errorLog.txt');  % 'a' for append
+        for eIdx = 1:numel(allErrors)
+            fprintf(fid, ...
+                'ERROR in file "%s" (Row: %d, Col: %d): %s\n', ...
+                allErrors{eIdx}.FileName, ...
+                allErrors{eIdx}.Row, ...
+                allErrors{eIdx}.Col, ...
+                allErrors{eIdx}.ErrorMessage);
+        end
+        fclose(fid);
+    end
     %% Concatenate All Processed Data
     % Initialize counters
     totalCurves = 0;
