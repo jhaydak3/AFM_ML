@@ -10,8 +10,8 @@ N = 1000;
 sequenceLength = 2000; % Sequence length expected by the model
 
 preprocessedDataFile = "C:\\Users\\MrBes\\Documents\\MATLAB\\AFM_ML\\AFM_ML_v6_sandbox\\training\\classification_processed_files\\processed_features_for_classification_All.mat";
-trainedModelFile = "C:\\Users\\MrBes\\Documents\\MATLAB\\AFM_ML\\AFM_ML_v6_sandbox\\training\\trainedClassificationModels\\two_conv_LSTM_sequence_pooling_relu_classification.mat";
-saveFileName = "C:\\Users\\MrBes\\Documents\\MATLAB\\AFM_ML\\AFM_ML_v6_sandbox\\classificationPredictionTimes.mat";
+trainedModelFile = "C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\trainedClassificationModels\pooling_after_bilstm_2conv_relu_classification.mat";
+saveFileName = "C:\\Users\\MrBes\\Documents\\MATLAB\\AFM_ML\\AFM_ML_v6_sandbox\\classificationPredictionTimes2.mat";
 
 %% Load data
 fprintf('Loading data from "%s"...\n', preprocessedDataFile);
@@ -26,8 +26,8 @@ trainedNet = loadedModel.trainedNet;
 
 %% Perform prediction repeatedly and record times
 predictionTimes = zeros(N, 1);
-
-for i = 1:N
+% First iteration takes longer for some reason
+for i = 1:N+1
     fprintf('Prediction iteration %d/%d...\n', i, N);
 
     % Select random curves
@@ -39,11 +39,13 @@ for i = 1:N
     dlXEval = dlarray(XEvalPerm, 'CBT');
 
     % Time prediction
+
     tic;
     predict(trainedNet, dlXEval);
     elapsedTime = toc;
-
-    predictionTimes(i) = elapsedTime;
+    if i > 1
+        predictionTimes(i-1) = elapsedTime;
+    end
 
     fprintf('Iteration %d prediction completed in %.4f seconds.\n', i, elapsedTime);
 end

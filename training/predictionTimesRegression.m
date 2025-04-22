@@ -8,8 +8,8 @@ close all;
 numCurvesToPredict = 1000;
 N = 1000;
 preprocessedDataFile = "C:\\Users\\MrBes\\Documents\\MATLAB\\AFM_ML\\AFM_ML_v6_sandbox\\training\\regression_processed_files\\processed_features_for_regression_All.mat";
-trainedModelFile ="C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\trainedClassificationModels\two_conv_LSTM_sequence_pooling_relu_classification.mat";
-saveFileName = "C:\\Users\\MrBes\\Documents\\MATLAB\\AFM_ML\\AFM_ML_v6_sandbox\\evaluationTimeRegression.mat";
+trainedModelFile ="C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\training\trainedRegressionModels\pooling_after_bilstm_2conv_relu.mat";
+saveFileName = "C:\\Users\\MrBes\\Documents\\MATLAB\\AFM_ML\\AFM_ML_v6_sandbox\\evaluationTimeRegression2.mat";
 
 %% Load data
 fprintf('Loading data from "%s"...\n', preprocessedDataFile);
@@ -24,8 +24,8 @@ trainedNet = modelData.trainedNet;
 
 %% Evaluate repeatedly and record prediction times
 predictionTimes = zeros(N, 1);
-
-for i = 1:N
+% Add + 1 here because the first evaluation always takes longer. 
+for i = 1:N+1
     fprintf('Evaluation iteration %d/%d...\n', i, N);
 
     % Select random curves
@@ -40,8 +40,9 @@ for i = 1:N
     tic;
     YPred = predict(trainedNet, XEvalForPred);
     elapsedTime = toc;
-
-    predictionTimes(i) = elapsedTime;
+    if(i > 1)
+        predictionTimes(i-1) = elapsedTime;
+    end
 
     fprintf('Iteration %d prediction completed in %.4f seconds.\n', i, elapsedTime);
 end

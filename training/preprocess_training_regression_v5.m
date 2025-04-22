@@ -7,7 +7,7 @@ clc;
 close all;
 
 %% Define Parameters
-n_points = 2000;               % Number of points for interpolation
+n_points = 5000;               % Number of points for interpolation
 folderPath = [
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Tubules"
     %"C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\AFM_data\Everything_over40nm"
@@ -42,7 +42,7 @@ savedFileName = [
     %"regression_processed_files\processed_features_for_regression_MCF7.mat"
     %"regression_processed_files\processed_features_for_regression_MCF10a.mat"
     %"regression_processed_files\processed_features_for_regression_podocytes.mat"
-    "regression_processed_files\processed_features_for_regression_spherical_tissue.mat"
+    "regression_processed_files\processed_features_for_regression_spherical_tissue_5000.mat"
     ];
 
 addpath("C:\Users\MrBes\Documents\MATLAB\AFM_ML\AFM_ML_v6_sandbox\helperFunctions")
