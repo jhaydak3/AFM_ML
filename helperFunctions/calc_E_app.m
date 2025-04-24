@@ -16,6 +16,10 @@ function [E_app, regimeChange, varargout] = calc_E_app(D, F, R, th, b, mode, plo
 %   regimeChange - Index where the regime changes from spherical to blunted cone
 %   varargout{1} - r^2 value for the linear fit if 'Hertz' mode is used
 
+% --- default for optional isTipSpherical argument ---
+if nargin < 9
+    isTipSpherical = 0;
+end
 regimeChange = 0;
 
 if strcmp(mode, 'pointwise')

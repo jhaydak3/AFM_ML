@@ -1,4 +1,6 @@
-function [HertzianModulusActual, HertzianModulusPredicted, Modulus500nmActual, Modulus500nmPredicted] = calculateModuli(rawExt, rawDefl, YActual, YPred, dataIdx, minExtValues, maxExtValues, b, th, R, v, spring_constant, indentationDepth_nm)
+function [HertzianModulusActual, HertzianModulusPredicted, Modulus500nmActual, Modulus500nmPredicted] = calculateModuli(rawExt, rawDefl, YActual, YPred, ...
+    dataIdx, minExtValues, maxExtValues, b, th, R, v, spring_constant, indentationDepth_nm, ...
+    isTipSpherical)
 %CALCULATEMODULI
 % Calculates Hertzian and 500 nm moduli for both actual and predicted Contact Points (CPs).
 %
@@ -23,6 +25,12 @@ function [HertzianModulusActual, HertzianModulusPredicted, Modulus500nmActual, M
 %   Modulus500nmActual        - [numSamples x 1] Actual 500 nm Modulus (kPa)
 %   Modulus500nmPredicted    - [numSamples x 1] Predicted 500 nm Modulus (kPa)
 
+% ---------- handle optional argument ----------
+if nargin < 14          % only 13 inputs supplied → no flag passed
+    isTipSpherical = false;
+end
+% ----------------------------------------------
+
 % Initialize output arrays
 numSamples = length(dataIdx);
 HertzianModulusActual = NaN(numSamples,1);
@@ -36,7 +44,7 @@ HertzFrontRemoveAmount = 100; % nm
 % Hertzian modulus calculation
 min_Depth_Hertzian = 100; %nm
 
-parfor i = 1:numSamples
+for i = 1:numSamples
     % Find the current curve index
     curveIdx = dataIdx(i);         % Use the i-th element from idxAll
 
@@ -89,24 +97,24 @@ parfor i = 1:numSamples
             [~, closest_idx_actual] = min(abs(depth_pred - indentationDepth_nm));
             F500 = force_pred(closest_idx_actual);
             D500 = depth_pred(closest_idx_actual);
-            E500_apparent = calc_E_singlePoint(D500, F500, current_R, current_th, current_b);
+            E500_apparent = calc_E_singlePoint(D500, F500, current_R, current_th, current_b, isTipSpherical);
             % Convert to kPa
             E500_temp  = E500_apparent * 1e18 * 1e-9 / 1000;  % nN/(nM^2) to kPa
             % Adjust based on Poisson's ratio
             E500 = E500_temp * 2 * (1 - current_v^2);
-            
+
             % [E_pointwise_pred_temp] = calc_E_app(depth_pred, force_pred, ...
             %     current_R, current_th, current_b, ...
             %     'pointwise', 0, 0);
             % % Convert to kPa
             % E_pointwise_pred_temp_kPa = E_pointwise_pred_temp * 1e18 * 1e-9 / 1000;  % nN/(nM^2) to kPa
-            % 
+            %
             % % Adjust based on Poisson's ratio
             % E_pointwise_pred_kPa = E_pointwise_pred_temp_kPa * 2 * (1 - current_v^2);
-            % 
+            %
             % % Find the index closest to indentationDepth_nm (500 nm)
             % [~, closest_idx_pred] = min(abs(depth_pred - indentationDepth_nm));
-            % 
+            %
             % % Assign the modulus at the closest depth
             % if ~isempty(closest_idx_pred)
             %     Modulus500nmPredicted(i) = E_pointwise_pred_kPa(closest_idx_pred);
@@ -147,7 +155,7 @@ parfor i = 1:numSamples
             [~, closest_idx_actual] = min(abs(depth_actual - indentationDepth_nm));
             F500 = force_actual(closest_idx_actual);
             D500 = depth_actual(closest_idx_actual);
-            E500_apparent = calc_E_singlePoint(D500, F500, current_R, current_th, current_b);
+            E500_apparent = calc_E_singlePoint(D500, F500, current_R, current_th, current_b, isTipSpherical);
             % Convert to kPa
             E500_temp  = E500_apparent * 1e18 * 1e-9 / 1000;  % % nN/(nM^2) to kPa
             % Adjust based on Poisson's ratio
@@ -157,13 +165,13 @@ parfor i = 1:numSamples
             %     'pointwise', 0, 0);
             % % Convert to kPa
             % E_pointwise_actual_temp_kPa = E_pointwise_actual_temp * 1e18 * 1e-9 / 1000;  % % nN/(nM^2) to kPa
-            % 
+            %
             % % Adjust based on Poisson's ratio
             % E_pointwise_actual_kPa = E_pointwise_actual_temp_kPa * 2 * (1 - current_v^2);
-            % 
+            %
             % % Find the index closest to indentationDepth_nm (500 nm)
             % [~, closest_idx_actual] = min(abs(depth_actual - indentationDepth_nm));
-            % 
+            %
             % % Assign the modulus at the closest depth
             % if ~isempty(closest_idx_actual)
             %     Modulus500nmActual(i) = E_pointwise_actual_kPa(closest_idx_actual);
@@ -180,7 +188,7 @@ parfor i = 1:numSamples
         try
             [E_hertz_val_actual] = calc_E_app(depth_actual, force_actual, ...
                 current_R, current_th, current_b, ...
-                'Hertz', 0, HertzFrontRemoveAmount);
+                'Hertz', 0, HertzFrontRemoveAmount, isTipSpherical);
             HertzianModulusActual(i) = E_hertz_val_actual * 1e18 * 1e-9 / 1000;  % N/m^2 to kPa
             % Adjust based on Poisson's ratio
             HertzianModulusActual(i) = HertzianModulusActual(i) * 2 * (1 - current_v^2);
@@ -192,7 +200,7 @@ parfor i = 1:numSamples
         try
             [E_hertz_val_pred] = calc_E_app(depth_pred, force_pred, ...
                 current_R, current_th, current_b, ...
-                'Hertz', 0, HertzFrontRemoveAmount);
+                'Hertz', 0, HertzFrontRemoveAmount, isTipSpherical);
             HertzianModulusPredicted(i) = E_hertz_val_pred * 1e18 * 1e-9 / 1000;  % N/m^2 to kPa
             % Adjust based on Poisson's ratio
             HertzianModulusPredicted(i) = HertzianModulusPredicted(i) * 2 * (1 - current_v^2);
