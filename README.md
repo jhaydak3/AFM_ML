@@ -41,3 +41,8 @@ These trained models can then be used together for **high-content AFM analysis**
 
 - For **issues, questions, or concerns**, contact **[jonathan.haydak@icahn.mssm.edu](mailto:jonathan.haydak@icahn.mssm.edu)**.
 - For **complaints**, contact **[evren.azeloglu@mssm.edu](mailto:evren.azeloglu@mssm.edu)**.
+
+
+This is the accomponying code for "AUTOMATED ATOMIC FORCE MICROSCOPY ANALYSIS USING CONVOLUTIONAL AND RECURRENT NEURAL NETWORKS"
+
+Please cite this paper: https://doi.org/10.1016/j.bpj.2025.05.005
