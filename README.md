@@ -1,3 +1,5 @@
+The attached code and data are freely available for academic and not-for-profit use only. For commercial use, please contact Mount Sinai Innovation Partners at MSIPinfo@mssm.edu.
+
 # AFM Contact Point and Quality Classification Pipeline
 
 ## Overview
